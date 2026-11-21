@@ -41,7 +41,7 @@ function daysAgo(n) {
 //   pending  — set when someone requests approval to move to the next stage
 //   updates  — progress updates (newest first); history — activity log (newest first)
 function acct(o) {
-  return { sector: 'Public', pending: null, outcome: null, archived: null, updates: [], history: [], events: [], plan: null, ...o };
+  return { sector: 'Public', pending: null, outcome: null, archived: null, updates: [], history: [], events: [], plan: null, approvals: [], evidenceBy: [], extension: null, ...o };
 }
 
 function seedAccounts() {
@@ -58,8 +58,8 @@ function seedAccounts() {
         { by: 'u4', at: daysAgo(21), text: 'Requested approval to move to POC Development' },
       ] }),
     acct({ id: 'ACC-002', name: 'Public Works Department', useCase: 'Road defect detection from images', am: 'u3', devs: ['u5'], stage: 3, status: 'On Track', progress: 25, stageSince: daysAgo(10),
-      evidence: ['POC_Proposal_PWD.pdf', 'Success_Criteria.xlsx'], pending: { by: 'u3', at: daysAgo(1) },
-      history: [{ by: 'u3', at: daysAgo(1), text: 'Requested approval to move to Agreement & Kick-off' }] }),
+      evidence: ['POC_Proposal_PWD.pdf', 'Success_Criteria.xlsx'], pending: { by: 'u3', at: daysAgo(6) },
+      history: [{ by: 'u3', at: daysAgo(6), text: 'Requested approval to move to Agreement & Kick-off' }] }),
     acct({ id: 'ACC-003', name: 'Immigration Department', useCase: 'Document verification assistant', am: 'u2', devs: ['u4', 'u5'], stage: 8, status: 'At Risk', progress: 85, stageSince: daysAgo(18),
       evidence: [null],
       updates: [{ by: 'u2', at: daysAgo(3), status: 'At Risk', progress: 85, note: 'Demo done. Agency asked for extra test on passport scans before evaluation.', blockers: 'Agency evaluation panel not yet confirmed.' }] }),
@@ -89,6 +89,7 @@ function seedAccounts() {
       history: [{ by: 'u1', at: daysAgo(30), text: 'Archived the account' }, { by: 'u6', at: daysAgo(45), text: 'Decision: POC closed' }] }),
   ];
   seedSchedule(list);
+  seedApprovals(list);
   return list;
 }
 
@@ -140,13 +141,36 @@ function seedSchedule(list) {
   ev('ACC-003', 15, 'Evaluation results walkthrough', 'Client demo', '10:00', '11:00', 'Immigration HQ');
 }
 
+// Demo approval records for stages already passed, plus who uploaded the current documents.
+function seedApprovals(list) {
+  const at = ymdStr => { const d = parseYmd(ymdStr); d.setHours(10, 30, 0, 0); return d.toISOString(); };
+  const comments = { 2: 'Use case is clear and data looks usable.', 3: 'Approved. Keep the success criteria measurable.', 6: 'Prototype reviewed, good to go.' };
+  list.forEach(a => {
+    const lastStage = a.outcome ? 10 : a.stage;
+    for (let id = lastStage - 1; id >= 1; id--) {
+      const s = STAGES[id - 1], p = a.plan && a.plan[id];
+      if (!p) continue;
+      const approver = s.approver === 'AM' ? a.am : s.approver === 'HM' ? 'u6' : 'u1';
+      const requester = s.approver === 'AM' ? (a.devs[0] || 'u1') : a.am;
+      const decided = at(p.end);
+      a.approvals.push({ stage: id, decision: 'approved', by: approver, at: decided, requestedBy: requester, requestedAt: new Date(new Date(decided) - 86400000).toISOString(), comment: comments[id] || '' });
+    }
+    a.approvals.sort((x, y) => y.at.localeCompare(x.at));
+    a.evidenceBy = a.evidence.map(f => f ? { by: a.pending ? a.pending.by : a.am, at: a.pending ? a.pending.at : a.stageSince } : null);
+  });
+  const rtd = list.find(a => a.id === 'ACC-009'), stb = list.find(a => a.id === 'ACC-010');
+  rtd.approvals.unshift({ stage: 10, decision: 'converted', by: 'u6', at: daysAgo(30), requestedBy: 'u2', requestedAt: daysAgo(32), comment: 'Strong results with the agency. Proceed to procurement planning.' });
+  rtd.approvals.splice(1, 0, { stage: 10, decision: 'extended', by: 'u6', at: daysAgo(95), requestedBy: 'u2', requestedAt: daysAgo(97), comment: 'Extend to test with the renewal backlog.', until: ymd(new Date(Date.now() - 60 * 86400000)) });
+  stb.approvals.unshift({ stage: 10, decision: 'closed', by: 'u6', at: daysAgo(45), requestedBy: 'u3', requestedAt: daysAgo(47), reason: 'Budget or procurement blocked', comment: 'No budget allocated for next year. Revisit if funding is approved.' });
+}
+
 // ---- storage helpers (browser storage; real backend later) ----
-const STORE_KEY = 'prism_accounts_v5';
+const STORE_KEY = 'prism_accounts_v6';
 
 function loadAccounts() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (raw) return JSON.parse(raw).map(a => ({ events: [], plan: null, archived: null, ...a }));
+    if (raw) return JSON.parse(raw).map(a => ({ events: [], plan: null, archived: null, approvals: [], evidenceBy: [], extension: null, ...a }));
   } catch (e) { /* ignore */ }
   const seeded = seedAccounts();
   saveAccounts(seeded);

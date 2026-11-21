@@ -52,7 +52,66 @@ function profileSection() {
       <label><span>Confirm new password</span><input type="password" name="confirm" autocomplete="new-password"></label>
       <p class="sub full set-note">${icon('alert')} Prototype only: the password is kept in this browser. Secure sign-in comes with the backend.</p>
       <div class="actions full"><button type="submit" class="btn">Change password</button></div>
+    </form></div>${awayCard()}`;
+}
+
+// Approvers can name a backup while they're away; requests then reach both of them.
+function awayCard() {
+  if (!['TL', 'AM', 'HM'].includes(user.role)) return '';
+  const d = (loadSettings().delegations || {})[user.id];
+  const active = delegationOf(user.id);
+  const options = USERS.filter(u => u.id !== user.id && ['TL', 'AM', 'HM'].includes(u.role));
+  return `<div class="card set-card">${setHead('Away and delegation', 'Name someone to handle your approvals while you are away')}
+    ${active ? `<div class="notice">${icon('check')} You're away until <b>${fmtDay(parseYmd(active.until))}</b>. Your approvals also go to <b>${esc(nameOf(active.to))}</b>.</div>` : ''}
+    <form id="awayForm" class="set-form" novalidate>
+      <div class="error" id="awayError"></div>
+      <label><span>Delegate to</span><select name="to"><option value="">Choose a person…</option>
+        ${options.map(u => `<option value="${u.id}" ${d && d.to === u.id ? 'selected' : ''}>${esc(u.name)} · ${ROLES[u.role].label}</option>`).join('')}</select></label>
+      <label><span>Away until</span><input type="date" name="until" min="${ymd(new Date())}" value="${d ? d.until : ''}"></label>
+      <p class="sub full set-note">${icon('alert')} They can approve on your behalf until that date. You can still approve too.</p>
+      <div class="actions full">${d ? '<button type="button" class="btn" data-set="away-clear">I\'m back</button>' : ''}<span style="flex:1"></span>
+        <button type="submit" class="btn btn-primary">Save delegation</button></div>
     </form></div>`;
+}
+function saveAway(form) {
+  const to = form.elements.to.value, until = form.elements.until.value;
+  if (!to) return setError('awayError', 'Choose who should handle your approvals.');
+  if (!until || until < ymd(new Date())) return setError('awayError', 'Choose the date you are back (today or later).');
+  updateSettings(s => { s.delegations = { ...(s.delegations || {}), [user.id]: { to, until } }; });
+  auditLog(user.id, `Delegated approvals to ${nameOf(to)} until ${fmtDay(parseYmd(until))}`);
+  toast(`Approvals delegated to ${nameOf(to)}`);
+  render();
+}
+function clearAway() {
+  updateSettings(s => { if (s.delegations) delete s.delegations[user.id]; });
+  auditLog(user.id, 'Ended approval delegation');
+  toast('Welcome back. Delegation ended');
+  render();
+}
+
+// Team Lead: reminder and escalation timing, and the Go / No-Go recommendation step.
+function rulesCard() {
+  const r = approvalRules();
+  return `<div class="card set-card">${setHead('Approval rules', 'Reminders, escalation and the Go / No-Go recommendation step')}
+    <form id="rulesForm" class="set-form" novalidate>
+      <div class="error" id="rulesError"></div>
+      <label><span>Remind approvers after (days)</span><input type="number" name="remindDays" min="1" max="30" step="1" value="${r.remindDays}"></label>
+      <label><span>Escalate to the Team Lead after (days)</span><input type="number" name="escalateDays" min="2" max="60" step="1" value="${r.escalateDays}"></label>
+      <label class="full set-toggle"><input type="checkbox" class="switch" name="recommendGoNoGo" ${r.recommendGoNoGo ? 'checked' : ''}>
+        <span><b>Team Lead recommends before Go / No-Go</b><small class="sub">Higher Management decides after the Team Lead's recommendation.</small></span></label>
+      <p class="sub full set-note">${icon('lock')} Nobody can approve their own request. Those requests go to the Team Lead (or Higher Management).</p>
+      <div class="actions full"><span style="flex:1"></span><button type="submit" class="btn btn-primary">Save rules</button></div>
+    </form></div>`;
+}
+function saveRules(form) {
+  const f = form.elements, remindDays = Number(f.remindDays.value), escalateDays = Number(f.escalateDays.value);
+  if (!Number.isInteger(remindDays) || remindDays < 1 || remindDays > 30) return setError('rulesError', 'Reminder days must be a whole number from 1 to 30.');
+  if (!Number.isInteger(escalateDays) || escalateDays <= remindDays || escalateDays > 60) return setError('rulesError', 'Escalate later than the reminder, and within 60 days.');
+  const rules = { remindDays, escalateDays, recommendGoNoGo: f.recommendGoNoGo.checked };
+  updateSettings(s => { s.workspace = { ...(s.workspace || {}), approvalRules: rules }; });
+  auditLog(user.id, `Changed approval rules: remind after ${remindDays}d, escalate after ${escalateDays}d, Go / No-Go recommendation ${rules.recommendGoNoGo ? 'on' : 'off'}`);
+  toast('Approval rules saved');
+  render();
 }
 
 function previewAvatar(color) {
@@ -159,6 +218,7 @@ function workspaceSection() {
       <div class="actions"><button type="button" class="btn" data-set="stages-reset">${icon('refresh')} Restore defaults</button><span style="flex:1"></span>
         <button type="submit" class="btn btn-primary">Save stages</button></div>
     </form></div>
+  ${rulesCard()}
   <div class="card set-card">${setHead('People and roles', `${USERS.length} people can sign in to PRISM`)}
     <form id="peopleForm" novalidate>
       <div class="error" id="peopleError"></div>
@@ -286,13 +346,14 @@ document.addEventListener('click', e => {
   if (act === 'tab') { setUI.tab = b.dataset.tab; history.replaceState(null, '', `settings.html?tab=${setUI.tab}`); render(); }
   else if (act === 'stages-reset') resetStages();
   else if (act === 'remove-user') removePerson(b.dataset.id);
+  else if (act === 'away-clear') clearAway();
 });
 document.addEventListener('change', e => {
   if (isEl(e.target, '[data-set-app]')) saveAppearance(e.target);
   else if (isEl(e.target, '#profileForm input[name=color]')) previewAvatar(e.target.value);
 });
 document.addEventListener('submit', e => {
-  const handlers = { profileForm: saveProfile, passwordForm: savePassword, stagesForm: saveStages, peopleForm: savePeople, addPersonForm: addPerson };
+  const handlers = { profileForm: saveProfile, passwordForm: savePassword, stagesForm: saveStages, peopleForm: savePeople, addPersonForm: addPerson, awayForm: saveAway, rulesForm: saveRules };
   const h = handlers[e.target.id];
   if (h) { e.preventDefault(); h(e.target); }
 });

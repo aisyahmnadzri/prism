@@ -1,13 +1,13 @@
 // PRISM service worker: keeps the app shell available so PRISM opens fast and works with a weak or no signal.
 // Strategy: network first (so updates show up straight away), falling back to the saved copy when offline.
 // Bump VERSION whenever the list of files changes.
-const VERSION = 'prism-v5';
+const VERSION = 'prism-v6';
 const SHELL = [
   './', 'index.html', 'offline.html',
   'dashboard.html', 'pipeline.html', 'schedule.html', 'approvals.html', 'messages.html', 'notifications.html',
   'accounts.html', 'account.html', 'account-form.html', 'settings.html', 'reports.html', 'audit.html', 'feedback.html',
   'css/styles.css',
-  'js/pwa.js', 'js/data.js', 'js/auth.js', 'js/schedule.js', 'js/messaging.js', 'js/notifications.js', 'js/settings.js', 'js/reports.js', 'js/audit.js', 'js/search.js', 'js/feedback.js', 'js/app.js',
+  'js/pwa.js', 'js/data.js', 'js/auth.js', 'js/schedule.js', 'js/messaging.js', 'js/notifications.js', 'js/settings.js', 'js/approvals.js', 'js/reports.js', 'js/audit.js', 'js/search.js', 'js/feedback.js', 'js/app.js',
   'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png',
 ];
 const FONT_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];

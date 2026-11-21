@@ -34,9 +34,19 @@ function buildFeed({ includeMuted = false } = {}) {
 
   accounts.filter(a => !a.archived).forEach(a => {
     if (canApprove(a)) {
+      const route = approvalRoute(a), rules = approvalRules(), w = waitDays(a);
       const move = a.stage === 10 ? 'Go / No-Go decision' : `${esc(stageOf(a).name)} → ${esc(STAGES[a.stage].name)}`;
-      add({ id: `apr:${a.id}:${a.pending.at}`, kind: 'approval', at: a.pending.at, href: accountLink(a),
-        html: `<b>${esc(nameOf(a.pending.by))}</b> needs your approval: ${move} ${acc(a)}` });
+      const ask = route.step === 'recommend' ? 'needs your recommendation' : 'needs your approval';
+      add({ id: `apr:${a.id}:${a.pending.at}:${route.step}`, kind: 'approval', at: (a.pending.recommendation || {}).at || a.pending.at, href: 'approvals.html',
+        html: `<b>${esc(nameOf(a.pending.by))}</b> ${ask}: ${move} ${acc(a)}` });
+      // Reminder once a request has waited too long, and an alert when it's escalated to the Team Lead
+      const responsible = route.primary.includes(user.id) || route.delegates.some(d => d.to === user.id);
+      if (w >= rules.remindDays && responsible) add({ id: `rem:${a.id}:${a.pending.at}`, kind: 'approval', href: 'approvals.html',
+        at: addDays(new Date(a.pending.at), rules.remindDays).toISOString(),
+        html: `<b>Reminder:</b> ${acc(a)} has waited <b>${w} days</b> for your ${route.step === 'recommend' ? 'recommendation' : 'approval'}` });
+      if (route.escalated && !route.primary.includes(user.id)) add({ id: `esc:${a.id}:${a.pending.at}`, kind: 'approval', href: 'approvals.html',
+        at: addDays(new Date(a.pending.at), rules.escalateDays).toISOString(),
+        html: `<b>Escalated to you:</b> ${acc(a)} has waited ${w} days for ${esc(route.primary.map(nameOf).join(', '))}` });
     }
     if (!followsAccount(a)) return;
 
@@ -44,7 +54,7 @@ function buildFeed({ includeMuted = false } = {}) {
       if (h.by === user.id) return;
       const t = h.text;
       let kind = null;
-      if (/^(Approved:|Returned for rework|Decision:|Skipped optional stage)/.test(t)) kind = 'stage';
+      if (/^(Approved:|Returned for rework|Decision:|Skipped optional stage|Withdrew|Recommended)/.test(t)) kind = 'stage';
       else if (/^Requested (approval|Go)/.test(t) && !canApprove(a)) kind = 'stage';
       else if (t === 'Account created' && (a.am === user.id || a.devs.includes(user.id))) kind = 'account';
       else if (t.startsWith('Account Manager changed:') && t.endsWith('→ ' + user.name)) kind = 'account';

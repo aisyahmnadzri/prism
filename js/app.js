@@ -152,13 +152,6 @@ function archiveAllDecided() {
   commit(`${decided.length} account${decided.length === 1 ? '' : 's'} archived`);
 }
 
-function canApprove(a) {
-  if (!a.pending || a.outcome) return false;
-  if (stageOf(a).approver !== user.role) return false;
-  if (user.role === 'AM' && a.am !== user.id) return false;
-  return true;
-}
-
 const myApprovals = () => accounts.filter(canApprove);
 const approves = PAGES.approvals.roles.includes(user.role);
 
@@ -170,30 +163,9 @@ function commit(msg) { saveAccounts(accounts); if (msg) toast(msg); render(); }
 function moveToStage(a, stageId) {
   a.stage = stageId;
   a.evidence = STAGES[stageId - 1].deliverables.map(() => null);
+  a.evidenceBy = [];
   a.stageSince = new Date().toISOString();
   a.pending = null;
-}
-
-function approve(id, decision) {
-  const a = find(id);
-  if (!a || !canApprove(a) || !evidenceComplete(a)) return;
-  const from = stageOf(a).name;
-  if (a.stage === 10) {
-    if (decision === 'Extended') { moveToStage(a, 6); a.status = 'On Track'; log(a, 'Decision: POC extended — back to POC Development'); }
-    else { a.outcome = decision; a.pending = null; log(a, `Decision: POC ${decision.toLowerCase()}`); }
-    return commit(`${a.name}: ${decision}`);
-  }
-  moveToStage(a, a.stage + 1);
-  log(a, `Approved: ${from} → ${stageOf(a).name}`);
-  commit(`${a.name} moved to “${stageOf(a).name}”`);
-}
-
-function returnForRework(id) {
-  const a = find(id);
-  if (!a || !canApprove(a)) return;
-  a.pending = null;
-  log(a, `Returned for rework at ${stageOf(a).name}`);
-  commit(`${a.name} returned for rework`);
 }
 
 function requestApproval(id) {
@@ -201,13 +173,14 @@ function requestApproval(id) {
   if (!a || !canEdit(a) || a.pending || !evidenceComplete(a)) return;
   a.pending = { by: user.id, at: new Date().toISOString() };
   log(a, a.stage === 10 ? 'Requested Go / No-Go decision' : `Requested approval to move to ${STAGES[a.stage].name}`);
-  commit(`Approval requested from ${ROLES[stageOf(a).approver].label}`);
+  commit(`Approval requested from ${approverNames(a)}`);
 }
 
 function skipStage(id) {
   const a = find(id);
   if (!a || user.role !== 'TL' || !canEdit(a) || a.pending || !stageOf(a).skippable) return;
   const from = stageOf(a).name;
+  recordDecision(a, 'skipped');
   moveToStage(a, a.stage + 1);
   log(a, `Skipped optional stage: ${from}`);
   commit(`${from} skipped`);
@@ -217,6 +190,7 @@ function attachEvidence(id, idx, fileName) {
   const a = find(id);
   if (!a || !canEdit(a) || a.pending) return;
   a.evidence[idx] = fileName;
+  (a.evidenceBy = a.evidenceBy || [])[idx] = { by: user.id, at: new Date().toISOString() };
   log(a, `Submitted “${stageOf(a).deliverables[idx]}” (${fileName})`);
   commit('Document submitted');
 }
@@ -226,6 +200,7 @@ function removeEvidence(id, idx) {
   if (!a || !canEdit(a) || a.pending) return;
   log(a, `Removed “${stageOf(a).deliverables[idx]}”`);
   a.evidence[idx] = null;
+  if (a.evidenceBy) a.evidenceBy[idx] = null;
   commit('Document removed');
 }
 
@@ -633,38 +608,7 @@ function drawBoard() {
 }
 
 // ---- Approve / decision buttons (shared by Approvals page and Account page) ----
-function decisionButtons(a) {
-  const ready = evidenceComplete(a);
-  const dis = ready ? '' : 'disabled title="All required items must be submitted first"';
-  return a.stage === 10
-    ? `<button class="btn btn-success btn-sm" data-act="Converted" data-id="${a.id}" ${dis}>Convert to project</button>
-       <button class="btn btn-sm" data-act="Extended" data-id="${a.id}" ${dis}>Extend POC</button>
-       <button class="btn btn-sm" data-act="Closed" data-id="${a.id}" ${dis}>Close</button>`
-    : `<button class="btn btn-success btn-sm" data-act="approve" data-id="${a.id}" ${dis}>Approve</button>
-       <button class="btn btn-sm" data-act="return" data-id="${a.id}">Return for rework</button>`;
-}
-
 // ---- Page: Approvals ----
-function approvalCard(a) {
-  const s = stageOf(a);
-  const next = a.stage < 10 ? STAGES[a.stage].name : 'Final decision';
-  const checklist = s.deliverables.map((d, i) => a.evidence[i]
-    ? `<li><span class="ok">✔</span>${esc(d)}</li>`
-    : `<li><span class="missing">✖</span>${esc(d)} <span class="badge b-delayed">missing</span></li>`).join('');
-  return `<div class="card approval">
-    <h3><a href="${accountLink(a)}">${esc(a.name)}</a></h3>
-    <div class="meta">${esc(a.useCase)} · requested by ${esc(nameOf(a.pending.by))}</div>
-    <div class="move"><span>${s.id}. ${esc(s.name)}</span><span class="arrow">→</span><span>${esc(next)}</span></div>
-    <ul class="checklist">${checklist}</ul>
-    <div class="actions">${decisionButtons(a)}</div>
-  </div>`;
-}
-
-function approvalsPage() {
-  const list = myApprovals();
-  return list.length ? `<div class="approvals">${list.map(approvalCard).join('')}</div>` : `<div class="empty">Nothing waiting for your approval.</div>`;
-}
-
 // ---- Page: Accounts ----
 function accountsPage(activeList) {
   const view = new URLSearchParams(location.search).get('view') === 'archived' ? 'archived' : 'active';
@@ -713,8 +657,12 @@ function currentAccount() {
 function stepper(a) {
   return `<ol class="stepper">${STAGES.map(s => {
     const state = a.outcome || s.id < a.stage ? 'done' : s.id === a.stage ? 'current' : 'todo';
-    return `<li class="${state}" title="${esc(s.name)} · approver: ${ROLES[s.approver].label}">
-      <span class="dot">${state === 'done' ? '✔' : s.id}</span><span class="lbl">${esc(s.name)}</span></li>`;
+    const rec = state === 'done' ? (a.approvals || []).find(r => r.stage === s.id && ['approved', 'skipped', 'converted', 'closed'].includes(r.decision)) : null;
+    const who = rec ? (rec.decision === 'skipped' ? 'Skipped' : `${nameOf(rec.by).split(' ')[0]} · ${fmtDay(new Date(rec.at))}`) : '';
+    const tip = rec ? `${esc(s.name)} · ${rec.decision === 'skipped' ? 'skipped' : `${rec.decision} by ${esc(nameOf(rec.by))} on ${fmtDate(rec.at)}`}${rec.comment ? ` — ${esc(rec.comment)}` : ''}`
+      : `${esc(s.name)} · approver: ${ROLES[s.approver].label}`;
+    return `<li class="${state}" title="${tip}">
+      <span class="dot">${state === 'done' ? '✔' : s.id}</span><span class="lbl">${esc(s.name)}</span>${who ? `<span class="who">${esc(who)}</span>` : ''}</li>`;
   }).join('')}</ol>`;
 }
 
@@ -730,13 +678,13 @@ function stagePanel(a) {
     const right = file
       ? `<span class="file">📄 ${esc(file)}</span>${editable ? ` <button class="link-btn" data-act="remove-doc" data-id="${a.id}" data-idx="${i}">Remove</button>` : ''}`
       : editable ? `<button class="btn btn-sm" data-act="attach" data-id="${a.id}" data-idx="${i}">Upload</button>` : '<span class="sub">Not submitted</span>';
-    return `<li class="doc-row"><span>${file ? '<span class="ok">✔</span>' : '<span class="missing">○</span>'} ${esc(d)}</span><span class="doc-right">${right}</span></li>`;
+    const meta = file && a.evidenceBy && a.evidenceBy[i] ? `<small class="doc-meta">${esc(nameOf(a.evidenceBy[i].by))} · ${fmtDate(a.evidenceBy[i].at)}</small>` : '';
+    return `<li class="doc-row"><span>${file ? '<span class="ok">✔</span>' : '<span class="missing">○</span>'} ${esc(d)}${meta}</span><span class="doc-right">${right}</span></li>`;
   }).join('');
 
   let footer;
   if (a.pending) {
-    footer = `<div class="notice">⏳ Waiting for <b>${ROLES[s.approver].label}</b> approval · requested by ${esc(nameOf(a.pending.by))} on ${fmtDate(a.pending.at)}</div>
-      ${canApprove(a) ? `<div class="actions">${decisionButtons(a)}</div>` : ''}`;
+    footer = pendingNotice(a);
   } else if (canEdit(a)) {
     const ready = evidenceComplete(a);
     footer = `<div class="actions">
@@ -899,7 +847,7 @@ function pageHeading() {
     schedule: ['Schedule', user.role === 'TL' ? 'Plan stage dates and team events for every POC.' : `Events and stage dates for ${mine}.`],
     approvals: ['Approvals', user.role === 'HM'
       ? 'Stages that need Higher Management sign-off: POC Proposal & Scoping, and the Go / No-Go Decision.'
-      : 'Approve is enabled only when every required item is submitted.'],
+      : 'Requests waiting for you, the ones you sent, and every decision made.'],
     accounts: [user.role === 'TL' ? 'All accounts' : 'My accounts', `Details of ${mine}. Click an account to open it.`],
     messages: ['Messages', 'Account discussions, direct messages and group chats.'],
     notifications: ['Notifications', 'Everything that needs your attention from the last two weeks.'],
@@ -979,6 +927,8 @@ function buildShell() {
     if (act === 'approve') approve(id);
     else if (act === 'return') returnForRework(id);
     else if (act === 'request') requestApproval(id);
+    else if (act === 'withdraw') withdrawRequest(id);
+    else if (act === 'recommend') approve(id);
     else if (act === 'skip') skipStage(id);
     else if (act === 'remove-doc') removeEvidence(id, idx);
     else if (act === 'archive') { if (archiveAccount(id)) commit('Account archived'); }

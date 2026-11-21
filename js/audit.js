@@ -15,7 +15,7 @@ const audUI = { q: '', person: 'all', account: 'all', type: 'all', range: '30', 
 function auditType(text) {
   if (/^(Scheduled|Updated event|Removed event|Updated the stage plan)/.test(text)) return 'schedule';
   if (/^(Archived|Restored)/.test(text)) return 'archive';
-  if (/^(Approved:|Returned for rework|Decision:|Skipped optional stage|Requested (approval|Go))/.test(text)) return 'stage';
+  if (/^(Approved:|Returned for rework|Decision:|Skipped optional stage|Requested (approval|Go)|Withdrew|Recommended)/.test(text)) return 'stage';
   if (/^(Submitted “|Removed “)/.test(text)) return 'docs';
   if (/^Posted a progress update/.test(text)) return 'update';
   return 'details';
