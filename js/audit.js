@@ -9,6 +9,7 @@ const AUDIT_TYPES = {
   schedule: { label: 'Schedule', color: '#ec4899' },
   archive: { label: 'Archive', color: '#64748b' },
   workspace: { label: 'Workspace settings', color: '#e11d48' },
+  tickets: { label: 'Tickets', color: '#0d9488' },
 };
 const audUI = { q: '', person: 'all', account: 'all', type: 'all', range: '30', limit: 60 };
 
@@ -24,7 +25,8 @@ function auditType(text) {
 function auditEntries() {
   const fromAccounts = accounts.flatMap(a => a.history.map(h => ({ at: h.at, by: h.by, text: h.text, a, type: auditType(h.text) })));
   const fromWorkspace = loadAudit().map(w => ({ ...w, a: null, type: 'workspace' }));
-  return [...fromAccounts, ...fromWorkspace].sort((x, y) => y.at.localeCompare(x.at));
+  const fromTickets = typeof ticketAuditEntries === 'function' ? ticketAuditEntries() : [];
+  return [...fromAccounts, ...fromWorkspace, ...fromTickets].sort((x, y) => y.at.localeCompare(x.at));
 }
 
 function auditFiltered() {
@@ -33,7 +35,7 @@ function auditFiltered() {
   return auditEntries().filter(e =>
     (!since || e.at >= since) &&
     (audUI.person === 'all' || e.by === audUI.person) &&
-    (audUI.account === 'all' || (audUI.account === 'workspace' ? !e.a : e.a && e.a.id === audUI.account)) &&
+    (audUI.account === 'all' || (audUI.account === 'workspace' ? e.type === 'workspace' : e.a && e.a.id === audUI.account)) &&
     (audUI.type === 'all' || e.type === audUI.type) &&
     (!q || `${e.text} ${nameOf(e.by)} ${e.a ? e.a.name : 'workspace'}`.toLowerCase().includes(q)));
 }
@@ -67,7 +69,7 @@ function auditPage() {
     return `${head}<tr>
       <td class="aud-time" data-label="Time">${new Date(e.at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</td>
       <td data-label="Person"><span class="aud-person"><span class="avatar mini role-${u.role}" data-u="${e.by}">${esc(initials(u.name))}</span>${esc(u.name)}</span></td>
-      <td data-label="Account">${e.a ? `<a href="${accountLink(e.a)}">${esc(e.a.name)}</a>${e.a.archived ? ' <span class="badge b-onhold">Archived</span>' : ''}` : '<span class="sub">Workspace</span>'}</td>
+      <td data-label="Account">${e.a ? `<a href="${accountLink(e.a)}">${esc(e.a.name)}</a>${e.a.archived ? ' <span class="badge b-onhold">Archived</span>' : ''}` : `<span class="sub">${e.type === 'tickets' ? 'Ticket' : 'Workspace'}</span>`}</td>
       <td data-label="Change"><span class="aud-type" style="--k:${t.color}">${t.label}</span> ${esc(e.text)}</td></tr>`;
   }).join('');
   const more = list.length > audUI.limit ? `<div class="aud-more"><button type="button" class="btn" data-aud-act="more">Show ${Math.min(60, list.length - audUI.limit)} more</button>

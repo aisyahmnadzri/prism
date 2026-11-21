@@ -11,6 +11,7 @@ const NOTIF_KINDS = {
   message: { label: 'Messages', icon: 'chat', color: '#6366f1', desc: 'New direct, group and account-thread messages' },
   schedule: { label: 'Schedule', icon: 'calendar', color: '#f59e0b', desc: 'A reminder the day before events on your accounts' },
   alert: { label: 'Deadlines', icon: 'alert', color: '#e11d48', desc: 'A stage target is coming up or has passed' },
+  ticket: { label: 'Tickets', icon: 'ticket', color: '#0d9488', desc: 'Tickets assigned to you, comments, status changes and due dates' },
 };
 const notifUI = { open: false, filter: 'all', seen: null };
 const HISTORY_WINDOW_DAYS = 14;
@@ -96,6 +97,7 @@ function buildFeed({ includeMuted = false } = {}) {
     }
   });
 
+  if (typeof ticketFeed === 'function') ticketFeed().forEach(add);
   return items.filter(i => includeMuted || prefOn(i.kind)).sort((x, y) => y.at.localeCompare(x.at));
 }
 

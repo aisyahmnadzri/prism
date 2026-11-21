@@ -61,6 +61,8 @@ function searchAll(q) {
     .map(({ e, a }) => ({ href: 'schedule.html', ic: 'calendar', title: mark(e.title, q),
       sub: `${esc(e.type)} · ${mark(a.name, q)}${e.location ? ` · ${mark(e.location, q)}` : ''}`, meta: fmtDay(parseYmd(e.date)) }));
   if (evHits.length) groups.push(['Events', evHits]);
+  const tkHits = typeof ticketSearch === 'function' ? ticketSearch(q) : [];
+  if (tkHits.length) groups.push(['Tickets', tkHits]);
   return groups;
 }
 

@@ -8,6 +8,7 @@ const PAGES = {
   schedule: { file: 'schedule.html', label: 'Schedule', roles: ['TL', 'AM', 'DEV'], group: 'Workspace' },
   approvals: { file: 'approvals.html', label: 'Approvals', roles: ['TL', 'AM', 'HM'], group: 'Workspace' },
   messages: { file: 'messages.html', label: 'Messages', roles: ['TL', 'AM', 'DEV', 'HM'], group: 'Workspace' },
+  tickets: { file: 'tickets.html', label: 'Tickets', roles: ['TL', 'AM', 'DEV', 'HM'], group: 'Workspace' },
   accounts: { file: 'accounts.html', label: 'Accounts', roles: ['TL', 'AM', 'DEV'], group: 'Workspace' },
   account: { file: 'account.html', label: 'Account', roles: ['TL', 'AM', 'DEV', 'HM'], hidden: true },
   'account-form': { file: 'account-form.html', label: 'Account form', roles: ['TL', 'AM'], hidden: true },
@@ -68,6 +69,7 @@ const ICONS = {
   trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>',
   dots: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  ticket: '<path d="M3 7a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4Z"/><path d="M14 5v2M14 11v2M14 17v2"/>',
   chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
   history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
   bulb: '<path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/>',
@@ -105,7 +107,7 @@ const PANEL_ICON = {
   'Approval aging': 'hourglass', 'POC outcomes': 'trophy', 'Time in stage vs target': 'gauge', 'Workload by status': 'users',
   'Team activity': 'activity', 'My to-dos': 'listcheck',
 };
-const NAV_ICON = { dashboard: 'grid', pipeline: 'kanban', schedule: 'calendar', approvals: 'check', messages: 'chat', accounts: 'building', reports: 'chart', audit: 'history', feedback: 'bulb', settings: 'gear' };
+const NAV_ICON = { dashboard: 'grid', pipeline: 'kanban', schedule: 'calendar', approvals: 'check', messages: 'chat', tickets: 'ticket', accounts: 'building', reports: 'chart', audit: 'history', feedback: 'bulb', settings: 'gear' };
 
 // ---- Access rules ----
 function canView(a) {
@@ -755,7 +757,7 @@ function accountPage() {
     </div>
     <section class="section"><h2>POC lifecycle</h2><div class="card">${stepper(a)}</div></section>
     <div class="detail-grid section">
-      <div class="col">${stagePanel(a)}${updatesPanel(a)}</div>
+      <div class="col">${stagePanel(a)}${accountTicketsCard(a)}${updatesPanel(a)}</div>
       <div class="col">${accountDiscussionCard(a)}${accountSchedulePanel(a)}${historyPanel(a)}</div>
     </div>
     <input type="file" id="fileInput" hidden>`;
@@ -850,6 +852,7 @@ function pageHeading() {
       : 'Requests waiting for you, the ones you sent, and every decision made.'],
     accounts: [user.role === 'TL' ? 'All accounts' : 'My accounts', `Details of ${mine}. Click an account to open it.`],
     messages: ['Messages', 'Account discussions, direct messages and group chats.'],
+    tickets: ['Tickets', user.role === 'TL' || user.role === 'HM' ? "The team's workload: open, in progress, pending and done work for everyone." : 'Your work and your team\'s: open, in progress, pending and done.'],
     notifications: ['Notifications', 'Everything that needs your attention from the last two weeks.'],
     reports: ['Reports', 'A POC status summary for management meetings. Download it as PDF or Excel.'],
     audit: ['Audit trail', 'Every change across PRISM: who did what, and when.'],
@@ -896,7 +899,7 @@ function buildShell() {
   document.getElementById('resetBtn').onclick = () => {
     resetAccounts(); accounts = loadAccounts();
     updateSettings(s => { delete s.workspace; }); applyWorkspace(); Object.assign(user, userById(user.id) || {});
-    try { localStorage.removeItem(MSG_KEY); localStorage.removeItem(NOTIF_KEY); localStorage.removeItem(FB_KEY); } catch (e) { /* ignore */ }
+    try { localStorage.removeItem(MSG_KEY); localStorage.removeItem(NOTIF_KEY); localStorage.removeItem(FB_KEY); localStorage.removeItem(TK_KEY); } catch (e) { /* ignore */ }
     notifUI.seen = null;
     reloadMsgs(); render(); toast('Demo data reset');
   };
@@ -953,7 +956,7 @@ function buildShell() {
   });
 }
 
-const MOBILE_ORDER = ['dashboard', 'approvals', 'messages', 'pipeline', 'schedule', 'accounts', 'reports', 'audit', 'feedback', 'settings'];
+const MOBILE_ORDER = ['dashboard', 'approvals', 'messages', 'pipeline', 'tickets', 'schedule', 'accounts', 'reports', 'audit', 'feedback', 'settings'];
 function setSheet(open) {
   const s = document.getElementById('navSheet'), b = document.querySelector('[data-nav="more"]');
   if (!s) return;
@@ -1002,6 +1005,7 @@ function render() {
     approvals: () => approvalsPage(),
     accounts: () => accountsPage(list),
     messages: () => messagesPage(),
+    tickets: () => ticketsPage(),
     notifications: () => notificationsPage(),
     settings: () => settingsPage(),
     reports: () => reportsPage(),
