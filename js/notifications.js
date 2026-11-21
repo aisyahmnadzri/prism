@@ -2,7 +2,7 @@
 // The feed is derived from what already happened in PRISM (approvals, history, messages, schedule, deadlines),
 // so nothing has to be "sent". Only read state and preferences are stored. Loaded before app.js.
 
-const NOTIF_KEY = 'prism_notifs_v2';
+const NOTIF_KEY = 'prism_notifs_v3';
 const NOTIF_KINDS = {
   approval: { label: 'Approvals', icon: 'check', color: '#7c3aed', desc: 'Someone needs your approval to move a POC forward' },
   stage: { label: 'Stage updates', icon: 'kanban', color: '#0ea5e9', desc: 'Requests, approvals, returns and decisions on your accounts' },

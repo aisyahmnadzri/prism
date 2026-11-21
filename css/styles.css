@@ -1691,3 +1691,18 @@ mark { background: color-mix(in srgb, #fbbf24 45%, transparent); color: inherit;
   .welcome-steps { grid-template-columns: minmax(0, 1fr); }
   .data-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ---------- First-run setup & people ---------- */
+.login-card[hidden] { display: none; }
+.eyebrow-dark { display: inline-block; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+  background: var(--accent-soft); padding: 4px 10px; border-radius: 999px; margin-bottom: 12px; }
+.login-card .field input:not(.input-ic input) { height: 44px; }
+.login-note { font-size: 12.5px; margin: 16px 0 0 !important; text-align: center; }
+.person-actions { white-space: nowrap; }
+.person-actions .icon-del { display: inline-grid; margin-left: 4px; }
+.icon-del.key:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.add-grid { grid-template-columns: 1fr 1.2fr .9fr 1fr auto; }
+#people .notice { margin-bottom: 12px; }
+#people .notice .ic { width: 15px; height: 15px; vertical-align: -2px; color: var(--amber); }
+@media (max-width: 1180px) { .add-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 860px) { .add-grid { grid-template-columns: minmax(0, 1fr); } .set-table.people td.person-actions { grid-column: 3; grid-row: 1; } }

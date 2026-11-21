@@ -31,10 +31,14 @@ function approvalRoute(a) {
     else note = 'The Team Lead made this request, so it goes straight to the decision.';
   }
   let primary = ofRole(role);
-  if (!primary.length) { // the requester is the only person with this role: nobody approves their own request
+  if (!primary.length) { // nobody else can approve: no one holds the role yet, or the requester is the only one
+    const nobody = !USERS.some(u => u.role === role && (role !== 'AM' || u.id === a.am));
     for (const r of ['TL', 'HM']) {
       primary = ofRole(r);
-      if (primary.length) { note = `Sent to ${ROLES[r].label} because requesters can't approve their own request.`; break; }
+      if (primary.length) {
+        note = nobody ? `Nobody has the ${ROLES[role].label} role yet, so this goes to the ${ROLES[r].label}.` : `Sent to ${ROLES[r].label} because requesters can't approve their own request.`;
+        break;
+      }
     }
   }
   const people = new Set(primary), delegates = [];

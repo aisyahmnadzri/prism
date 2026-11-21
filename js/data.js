@@ -22,15 +22,18 @@ const STAGES = [
 ];
 
 // Demo users — all share the demo password below. Prototype only, not real credentials.
+// Sample people exist only while sample data is loaded (Settings › Workspace › Workspace data).
 const DEMO_PASSWORD = 'prism123';
-const USERS = [
-  { id: 'u1', name: 'Hafiz Rahman', email: 'lead@prism.local', role: 'TL' },
-  { id: 'u2', name: 'Nurul Aina', email: 'aina@prism.local', role: 'AM' },
-  { id: 'u3', name: 'Daniel Lim', email: 'daniel@prism.local', role: 'AM' },
-  { id: 'u4', name: 'Kavitha Raj', email: 'kavitha@prism.local', role: 'DEV' },
-  { id: 'u5', name: 'Amir Zulkifli', email: 'amir@prism.local', role: 'DEV' },
-  { id: 'u6', name: 'Rosnah Ismail', email: 'mgmt@prism.local', role: 'HM' },
+const SAMPLE_USERS = [
+  { id: 'u1', name: 'Hafiz Rahman', email: 'lead@prism.local', role: 'TL', sample: true },
+  { id: 'u2', name: 'Nurul Aina', email: 'aina@prism.local', role: 'AM', sample: true },
+  { id: 'u3', name: 'Daniel Lim', email: 'daniel@prism.local', role: 'AM', sample: true },
+  { id: 'u4', name: 'Kavitha Raj', email: 'kavitha@prism.local', role: 'DEV', sample: true },
+  { id: 'u5', name: 'Amir Zulkifli', email: 'amir@prism.local', role: 'DEV', sample: true },
+  { id: 'u6', name: 'Rosnah Ismail', email: 'mgmt@prism.local', role: 'HM', sample: true },
 ];
+// The real team, created in the app (first-run setup, then Settings › People and roles)
+const USERS = [];
 
 function daysAgo(n) {
   return new Date(Date.now() - n * 86400000).toISOString();
@@ -165,7 +168,7 @@ function seedApprovals(list) {
 }
 
 // ---- storage helpers (browser storage; real backend later) ----
-const STORE_KEY = 'prism_accounts_v7';
+const STORE_KEY = 'prism_accounts_v8';
 
 function loadAccounts() {
   try {
@@ -185,7 +188,7 @@ function resetAccounts() {
 }
 
 // ---- Workspace audit log (changes that aren't tied to one account, e.g. stage settings, people) ----
-const AUDIT_KEY = 'prism_audit_v2';
+const AUDIT_KEY = 'prism_audit_v3';
 function loadAudit() { try { return JSON.parse(localStorage.getItem(AUDIT_KEY)) || []; } catch (e) { return []; } }
 function auditLog(by, text) {
   const list = loadAudit();
@@ -207,9 +210,8 @@ const IS_APP = (window.matchMedia && matchMedia('(display-mode: standalone)').ma
 const sessionStore = () => IS_APP ? localStorage : sessionStorage;
 
 // ---- Settings: personal profile + appearance, and Team Lead workspace overrides (stages, people) ----
-const SETTINGS_KEY = 'prism_settings_v1';
+const SETTINGS_KEY = 'prism_settings_v2';
 const DEFAULT_STAGES = STAGES.map(s => ({ ...s }));
-const DEFAULT_USERS = USERS.map(u => ({ ...u }));
 const AVATAR_COLORS = {
   violet: ['#7c3aed', '#a855f7'], ocean: ['#2563eb', '#06b6d4'], forest: ['#0d9488', '#22c55e'],
   sunset: ['#ea580c', '#f43f5e'], rose: ['#db2777', '#f472b6'], slate: ['#334155', '#64748b'],
@@ -224,8 +226,22 @@ function loadSettings() { try { return JSON.parse(localStorage.getItem(SETTINGS_
 function saveSettings(s) { try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch (e) { /* ignore */ } }
 const profileOf = uid => ((loadSettings().profiles || {})[uid]) || {};
 const appearanceOf = uid => ({ theme: 'system', density: 'comfortable', start: '', ...((loadSettings().appearance || {})[uid] || {}) });
-// Demo only: real sign-in and password storage come with the backend.
-const passwordFor = uid => ((loadSettings().passwords || {})[uid]) || DEMO_PASSWORD;
+// Prototype only: real sign-in and password storage come with the backend.
+const passwordFor = uid => ((loadSettings().passwords || {})[uid]) || (SAMPLE_USERS.some(u => u.id === uid) ? DEMO_PASSWORD : null);
+const newPersonId = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+
+// First run: the first person to open PRISM becomes the AI Team Lead.
+function createFirstTeamLead(name, email, password) {
+  const s = loadSettings();
+  if ((s.workspace && s.workspace.users && s.workspace.users.length)) return null;
+  const tl = { id: newPersonId(), name, email, role: 'TL' };
+  s.workspace = { ...(s.workspace || {}), users: [tl] };
+  s.passwords = { ...(s.passwords || {}), [tl.id]: password };
+  saveSettings(s);
+  applyWorkspace();
+  auditLog(tl.id, `Set up PRISM and created the AI Team Lead account (${name})`);
+  return tl;
+}
 
 function startPageFor(u) {
   const p = appearanceOf(u.id).start;
@@ -237,7 +253,7 @@ function startPageFor(u) {
 function applyWorkspace() {
   const ws = loadSettings().workspace || {};
   STAGES.forEach((s, i) => Object.assign(s, DEFAULT_STAGES[i], (ws.stages || {})[s.id] || {}));
-  USERS.splice(0, USERS.length, ...(ws.users || DEFAULT_USERS).map(u => ({ ...u })));
+  USERS.splice(0, USERS.length, ...(ws.users || []).map(u => ({ ...u })));
 }
 
 // Theme, density and personal avatar colours for whoever is signed in on this tab.
@@ -256,10 +272,11 @@ function applyAppearance() {
   el.textContent = css;
 }
 
-// Remove demo data saved by earlier prototype versions (sign-ins, profiles and settings are kept).
+// Remove everything saved by earlier prototype versions so every browser starts completely fresh.
 (function purgeLegacyData() {
-  const legacy = ['prism_accounts_v1', 'prism_accounts_v2', 'prism_accounts_v3', 'prism_accounts_v4', 'prism_accounts_v5', 'prism_accounts_v6',
-    'prism_messages_v1', 'prism_tickets_v1', 'prism_feedback_v1', 'prism_notifs_v1', 'prism_audit_v1'];
+  const legacy = ['prism_accounts_v1', 'prism_accounts_v2', 'prism_accounts_v3', 'prism_accounts_v4', 'prism_accounts_v5', 'prism_accounts_v6', 'prism_accounts_v7',
+    'prism_messages_v1', 'prism_messages_v2', 'prism_tickets_v1', 'prism_tickets_v2', 'prism_feedback_v1', 'prism_feedback_v2',
+    'prism_notifs_v1', 'prism_notifs_v2', 'prism_audit_v1', 'prism_audit_v2', 'prism_settings_v1'];
   try { legacy.forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignore */ }
 })();
 

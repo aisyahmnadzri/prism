@@ -3,7 +3,7 @@
 // different users can chat live (the 'storage' event syncs them). Real delivery between people needs the backend.
 // Loaded before app.js; app.js helpers (esc, icon, render, user, accounts, …) are used at call time only.
 
-const MSG_KEY = 'prism_messages_v2';
+const MSG_KEY = 'prism_messages_v3';
 const emptyMsgs = () => ({ defaultRead: new Date(0).toISOString(), reads: {}, groups: [], threads: {} });
 let msgs = null;
 const msgUI = { active: null, q: '', showConv: false, tab: 'acc', init: false }; // tab: 'acc' (account threads) | 'direct' (DMs + groups)

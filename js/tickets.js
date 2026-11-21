@@ -2,7 +2,7 @@
 // (open / in progress / pending / overdue / done per person, load meter, throughput, resolution time).
 // Prototype: tickets are stored in this browser. Loaded before app.js; app.js helpers are used at call time only.
 
-const TK_KEY = 'prism_tickets_v2';
+const TK_KEY = 'prism_tickets_v3';
 const TK_STATUS = {
   open: { label: 'Open', color: '#6366f1' }, progress: { label: 'In progress', color: '#0ea5e9' },
   pending: { label: 'Pending', color: '#f59e0b' }, resolved: { label: 'Resolved', color: '#16a34a' }, closed: { label: 'Closed', color: '#64748b' },

@@ -108,7 +108,7 @@ function dataCard() {
   const counts = [['Accounts', accounts.length], ['Tickets', loadTickets().items.length], ['Messages', msgCount], ['Feedback', loadFb().items.length]];
   return `<div class="card set-card">${setHead('Workspace data', 'Everything people have entered in this workspace')}
     <div class="data-counts">${counts.map(([l, n]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}</div>
-    <p class="sub set-note">${icon('alert')} Prototype: data is saved in this browser only. People, roles and settings aren't affected by these buttons.</p>
+    <p class="sub set-note">${icon('alert')} Prototype: data is saved in this browser only. Sample data adds six sample people (password <code>${DEMO_PASSWORD}</code>); erasing removes them again. Your real team is never affected.</p>
     <div class="actions">
       <button type="button" class="btn" data-set="load-sample">${icon('download')} Load sample data</button>
       <span style="flex:1"></span>
@@ -116,6 +116,12 @@ function dataCard() {
     </div></div>`;
 }
 function replaceWorkspaceData(sample) {
+  // Sample people come and go with the sample data; real people are never touched.
+  updateSettings(s => {
+    const real = ((s.workspace && s.workspace.users) || []).filter(u => !u.sample || u.id === user.id);
+    s.workspace = { ...(s.workspace || {}), users: sample ? [...real, ...SAMPLE_USERS.filter(x => !real.some(r => r.id === x.id || r.email.toLowerCase() === x.email)).map(x => ({ ...x }))] : real };
+  });
+  applyWorkspace();
   accounts = sample ? seedAccounts() : [];
   saveAccounts(accounts);
   saveMsgs(sample ? seedMessages() : emptyMsgs()); reloadMsgs();
@@ -125,14 +131,14 @@ function replaceWorkspaceData(sample) {
   notifUI.seen = null;
 }
 function loadSampleData() {
-  if (!confirm('Replace everything in this workspace with sample data? Any accounts, tickets, messages and feedback you entered will be removed.')) return;
+  if (!confirm('Replace everything in this workspace with sample data? Any accounts, tickets, messages and feedback you entered will be removed. Six sample people are added; your real team stays.')) return;
   replaceWorkspaceData(true);
   auditLog(user.id, 'Loaded sample data');
   toast('Sample data loaded');
   render();
 }
 function eraseAllData() {
-  if (!confirm('Erase all accounts, tickets, messages, feedback, notifications and audit history in this workspace? This cannot be undone.')) return;
+  if (!confirm('Erase all accounts, tickets, messages, feedback, notifications and audit history in this workspace, and remove the sample people? Your real team stays. This cannot be undone.')) return;
   replaceWorkspaceData(false);
   auditLog(user.id, 'Erased all workspace data');
   toast('Workspace erased. It is now empty');
@@ -245,7 +251,9 @@ function workspaceSection() {
       <td data-label="Email"><input name="e_${u.id}" type="email" value="${esc(u.email)}" maxlength="80" aria-label="Email"></td>
       <td data-label="Role"><select name="r_${u.id}" aria-label="Role" ${u.id === user.id ? 'disabled title="You can\'t change your own role"' : ''}>${Object.keys(ROLES).map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></td>
       <td class="assign" data-label="Accounts">${assignmentText(u.id)}</td>
-      <td>${u.id === user.id ? '<span class="badge b-pending">You</span>' : `<button type="button" class="icon-del" data-set="remove-user" data-id="${u.id}" title="Remove ${esc(u.name)}" aria-label="Remove ${esc(u.name)}">${icon('trash')}</button>`}</td></tr>`).join('');
+      <td class="person-actions">${u.id === user.id ? '<span class="badge b-pending">You</span>' : `<button type="button" class="icon-del key" data-set="reset-pw" data-id="${u.id}" title="Set a new password for ${esc(u.name)}" aria-label="Reset password for ${esc(u.name)}">${icon('lock')}</button>
+        <button type="button" class="icon-del" data-set="remove-user" data-id="${u.id}" title="Remove ${esc(u.name)}" aria-label="Remove ${esc(u.name)}">${icon('trash')}</button>`}</td></tr>`).join('');
+  const missingRoles = ['AM', 'DEV', 'HM'].filter(r => !USERS.some(u => u.role === r));
   return `<div class="card set-card">${setHead('POC stages', 'Target days, approver and optional stages for every account')}
     <form id="stagesForm" novalidate>
       <div class="error" id="stagesError"></div>
@@ -256,7 +264,9 @@ function workspaceSection() {
     </form></div>
   ${rulesCard()}
   ${dataCard()}
-  <div class="card set-card">${setHead('People and roles', `${USERS.length} people can sign in to PRISM`)}
+  <div class="card set-card" id="people">${setHead('People and roles', `${USERS.length} ${USERS.length === 1 ? 'person' : 'people'} can sign in to PRISM`)}
+    ${missingRoles.length ? `<div class="notice">${icon('alert')} Nobody has the ${missingRoles.map(r => `<b>${ROLES[r].label}</b>`).join(', ').replace(/, ([^,]*)$/, ' or $1')} role yet.
+      ${missingRoles.includes('HM') ? 'Until you add Higher Management, their approvals come to you. ' : ''}${missingRoles.includes('AM') ? 'You need an Account Manager before creating accounts.' : ''}</div>` : ''}
     <form id="peopleForm" novalidate>
       <div class="error" id="peopleError"></div>
       <div class="set-table-wrap"><table class="set-table people"><thead><tr><th></th><th>Name</th><th>Email</th><th>Role</th><th>Accounts</th><th></th></tr></thead><tbody>${peopleRows}</tbody></table></div>
@@ -266,12 +276,13 @@ function workspaceSection() {
       <h4>Add a person</h4>
       <div class="error" id="addError"></div>
       <div class="add-grid">
-        <label><span>Name</span><input name="name" maxlength="60" placeholder="Siti Hajar"></label>
-        <label><span>Email</span><input name="email" type="email" maxlength="80" placeholder="siti@prism.local"></label>
-        <label><span>Role</span><select name="role">${Object.keys(ROLES).map(r => `<option value="${r}" ${r === 'DEV' ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></label>
-        <button type="submit" class="btn">${icon('plus')} Add person</button>
+        <label><span>Name</span><input name="name" maxlength="60" placeholder="Full name"></label>
+        <label><span>Email</span><input name="email" type="email" maxlength="80" placeholder="name@company.com" autocomplete="off"></label>
+        <label><span>Role</span><select name="role">${Object.keys(ROLES).map(r => `<option value="${r}" ${r === (USERS.some(u => u.role === 'AM') ? 'DEV' : 'AM') ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></label>
+        <label><span>Temporary password</span><input name="password" type="text" maxlength="60" placeholder="At least 8 characters" autocomplete="off"></label>
+        <button type="submit" class="btn btn-primary">${icon('plus')} Add person</button>
       </div>
-      <p class="sub set-note">New people sign in with the demo password until they change it in My profile.</p>
+      <p class="sub set-note">${icon('lock')} Share the temporary password with them privately. They can change it in Settings › My profile.</p>
     </form></div>`;
 }
 
@@ -282,8 +293,6 @@ function saveStages(form) {
     if (!Number.isInteger(t) || t < 1 || t > 365) return setError('stagesError', `Stage ${s.id}: target days must be a whole number from 1 to 365.`);
     stages[s.id] = { targetDays: t, approver: f['a' + s.id].value, skippable: f['o' + s.id].checked };
   }
-  const missing = [...new Set(Object.values(stages).map(x => x.approver))].filter(r => !USERS.some(u => u.role === r));
-  if (missing.length) return setError('stagesError', `Nobody has the ${missing.map(r => ROLES[r].label).join(' / ')} role, so they couldn't approve. Add someone first.`);
   const changed = STAGES.filter(x => { const n = stages[x.id]; return n.targetDays !== x.targetDays || n.approver !== x.approver || n.skippable !== x.skippable; })
     .map(x => `Stage ${x.id}`);
   updateSettings(s => { s.workspace = { ...(s.workspace || {}), stages }; });
@@ -313,8 +322,8 @@ function checkPeople(list) {
     names.add(u.name.toLowerCase()); emails.add(u.email.toLowerCase());
   }
   if (!list.some(u => u.role === 'TL')) return 'Keep at least one AI Team Lead.';
-  const needed = [...new Set(STAGES.map(s => s.approver))].filter(r => !list.some(u => u.role === r));
-  if (needed.length) return `Keep at least one ${needed.map(r => ROLES[r].label).join(' and one ')}: some stages need their approval.`;
+  const lost = [...new Set(STAGES.map(s => s.approver))].filter(r => r !== 'TL' && USERS.some(u => u.role === r) && !list.some(u => u.role === r));
+  if (lost.length) return `Keep at least one ${lost.map(r => ROLES[r].label).join(' and one ')}: some stages need their approval.`;
   for (const u of list) {
     const old = userById(u.id);
     if (!old || old.role === u.role) continue;
@@ -356,11 +365,33 @@ function savePeople(form) {
 
 function addPerson(form) {
   const f = form.elements;
-  const next = Math.max(0, ...USERS.map(u => parseInt(u.id.replace(/\D/g, ''), 10) || 0)) + 1;
-  const person = { id: 'u' + next, name: f.name.value.trim(), email: f.email.value.trim(), role: f.role.value };
+  const person = { id: newPersonId(), name: f.name.value.trim(), email: f.email.value.trim(), role: f.role.value };
   const err = checkPeople([...USERS.map(u => ({ ...u })), person]);
   if (err) return setError('addError', err);
-  commitPeople([...USERS.map(u => ({ ...u })), person], `${person.name} added as ${ROLES[person.role].label}`);
+  if (f.password.value.length < 8) return setError('addError', 'Give them a temporary password of at least 8 characters.');
+  updateSettings(s => { s.passwords = { ...(s.passwords || {}), [person.id]: f.password.value }; });
+  commitPeople([...USERS.map(u => ({ ...u })), person], `${person.name} added as ${ROLES[person.role].label}. Share their email and temporary password with them.`);
+}
+
+function resetPasswordDialog(id) {
+  const u = userById(id);
+  if (!u || user.role !== 'TL' || id === user.id) return;
+  openDialog(`${dialogHead('Set a new password', `${esc(u.name)} · ${esc(u.email)}`)}
+    <form id="resetPwForm" class="dlg-form" data-id="${id}" novalidate>
+      <div class="error" id="resetPwError"></div>
+      <label class="full"><span>New temporary password</span><input name="password" type="text" maxlength="60" placeholder="At least 8 characters" autocomplete="off"></label>
+      <p class="sub full">Share it with ${esc(u.name.split(' ')[0])} privately. They can change it in My profile.</p>
+      <div class="actions dlg-actions full"><span style="flex:1"></span><button type="button" class="btn" data-sch="close">Cancel</button>
+        <button type="submit" class="btn btn-primary">Set password</button></div></form>`);
+}
+function saveResetPassword(form) {
+  const pw = form.elements.password.value;
+  if (pw.length < 8) return setError('resetPwError', 'Use at least 8 characters.');
+  const u = userById(form.dataset.id);
+  updateSettings(s => { s.passwords = { ...(s.passwords || {}), [u.id]: pw }; });
+  auditLog(user.id, `Reset ${u.name}'s password`);
+  dialogEl().close();
+  toast(`New password set for ${u.name}`);
 }
 
 function removePerson(id) {
@@ -386,13 +417,14 @@ document.addEventListener('click', e => {
   else if (act === 'away-clear') clearAway();
   else if (act === 'load-sample') loadSampleData();
   else if (act === 'erase-all') eraseAllData();
+  else if (act === 'reset-pw') resetPasswordDialog(b.dataset.id);
 });
 document.addEventListener('change', e => {
   if (isEl(e.target, '[data-set-app]')) saveAppearance(e.target);
   else if (isEl(e.target, '#profileForm input[name=color]')) previewAvatar(e.target.value);
 });
 document.addEventListener('submit', e => {
-  const handlers = { profileForm: saveProfile, passwordForm: savePassword, stagesForm: saveStages, peopleForm: savePeople, addPersonForm: addPerson, awayForm: saveAway, rulesForm: saveRules };
+  const handlers = { profileForm: saveProfile, passwordForm: savePassword, stagesForm: saveStages, peopleForm: savePeople, addPersonForm: addPerson, awayForm: saveAway, rulesForm: saveRules, resetPwForm: saveResetPassword };
   const h = handlers[e.target.id];
   if (h) { e.preventDefault(); h(e.target); }
 });

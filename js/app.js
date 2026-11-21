@@ -488,7 +488,7 @@ function heroBanner(active) {
 function welcomePage() {
   const tl = user.role === 'TL';
   const steps = tl ? [
-    ['users', 'Set up your team', 'Rename the test users or add your real team, and set each person\'s role.', 'settings.html?tab=workspace', 'Open Settings'],
+    ['users', 'Add your team', 'Add Account Managers, Developers and Higher Management, each with a temporary password.', 'settings.html?tab=workspace', 'Open Settings'],
     ['building', 'Add your first account', 'Create a POC account and assign its Account Manager and Developers.', 'account-form.html', 'Add account'],
     ['kanban', 'Track it through the stages', 'Upload documents, request approvals and log progress as the POC moves forward.', 'pipeline.html', 'Open pipeline'],
   ] : [
@@ -796,6 +796,10 @@ function formAccount() {
 
 function accountFormPage() {
   const { mode, a, ok } = formAccount();
+  if (ok && !USERS.some(u => u.role === 'AM')) {
+    return `<div class="empty">Every account needs an Account Manager, and nobody has that role yet.<br><br>
+      <a class="btn btn-primary" href="settings.html?tab=workspace">${icon('users')} Add your team first</a></div>`;
+  }
   if (!ok) return `<div class="empty">${mode === 'new' ? 'Only the AI Team Lead can create accounts.' : "Account not found, or you can't edit it."}</div>`;
   const v = a || { name: '', sector: 'Public', useCase: '', description: '', contact: '', am: '', devs: [] };
   const lock = user.role !== 'TL';

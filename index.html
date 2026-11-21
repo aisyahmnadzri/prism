@@ -14,7 +14,7 @@
   <title>PRISM — Sign in</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=8">
+  <link rel="stylesheet" href="css/styles.css?v=9">
 </head>
 <body>
   <div class="login-wrap">
@@ -61,7 +61,20 @@
     </section>
 
     <section class="login-panel">
-      <form class="login-card" id="loginForm" novalidate>
+      <form class="login-card" id="setupForm" novalidate hidden>
+        <span class="eyebrow-dark">First-time setup</span>
+        <h2>Set up PRISM</h2>
+        <p class="sub">Create the <b>AI Team Lead</b> account. You'll add the rest of your team after this.</p>
+        <div class="error" id="setupError"></div>
+        <div class="field"><label for="sName">Your name</label><input id="sName" maxlength="60" autocomplete="name" placeholder="Full name"></div>
+        <div class="field"><label for="sEmail">Work email</label><input id="sEmail" type="email" maxlength="80" autocomplete="username" placeholder="name@company.com"></div>
+        <div class="field"><label for="sPw">Password</label><input id="sPw" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
+        <div class="field"><label for="sPw2">Confirm password</label><input id="sPw2" type="password" autocomplete="new-password"></div>
+        <button class="btn btn-primary" type="submit">Create Team Lead account</button>
+        <p class="sub login-note">Prototype: accounts and data are stored in this browser only.</p>
+      </form>
+
+      <form class="login-card" id="loginForm" novalidate hidden>
         <h2>Welcome back</h2>
         <p class="sub">Sign in with your work email to continue.</p>
         <div class="error" id="error">That email or password isn't right. Try again.</div>
@@ -81,39 +94,43 @@
         </div>
         <button class="btn btn-primary" type="submit">Sign in</button>
         <button class="btn install-link login-install" type="button" data-pwa-install>Install the PRISM app</button>
-
-        <div class="demo">
-          <p>Test users</p>
-          <div class="demo-list" id="demoList"></div>
-        </div>
+        <p class="sub login-note">Forgot your password? Ask your AI Team Lead to set a new one.</p>
       </form>
     </section>
   </div>
 
-  <script src="js/pwa.js?v=8"></script>
-  <script src="js/data.js?v=8"></script>
-  <script src="js/auth.js?v=8"></script>
+  <script src="js/pwa.js?v=9"></script>
+  <script src="js/data.js?v=9"></script>
+  <script src="js/auth.js?v=9"></script>
   <script>
     if (currentUser()) window.location.href = startPageFor(currentUser());
 
-    const form = document.getElementById('loginForm');
-    const err = document.getElementById('error');
+    const setup = document.getElementById('setupForm'), form = document.getElementById('loginForm');
+    const firstRun = USERS.length === 0;
+    (firstRun ? setup : form).hidden = false;
+    (firstRun ? document.getElementById('sName') : document.getElementById('email')).focus();
 
+    setup.addEventListener('submit', e => {
+      e.preventDefault();
+      const err = m => { const el = document.getElementById('setupError'); el.textContent = m; el.style.display = 'block'; };
+      const name = document.getElementById('sName').value.trim(), email = document.getElementById('sEmail').value.trim();
+      const pw = document.getElementById('sPw').value, pw2 = document.getElementById('sPw2').value;
+      if (name.length < 2) return err('Enter your name.');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err('Enter a valid work email.');
+      if (pw.length < 8) return err('Use a password of at least 8 characters.');
+      if (pw !== pw2) return err("The passwords don't match.");
+      const tl = createFirstTeamLead(name, email, pw);
+      if (!tl) return location.reload();
+      login(email, pw);
+      window.location.href = 'dashboard.html';
+    });
+
+    const errBox = document.getElementById('error');
     form.addEventListener('submit', e => {
       e.preventDefault();
       const user = login(form.email.value, form.password.value);
       if (user) window.location.href = startPageFor(user);
-      else err.style.display = 'block';
-    });
-
-    const list = document.getElementById('demoList');
-    USERS.forEach(u => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      const initials = u.name.split(' ').map(p => p[0]).slice(0, 2).join('');
-      b.innerHTML = `<span class="avatar">${initials}</span><div><b>${u.name}</b><span>${ROLES[u.role].label}</span></div>`;
-      b.onclick = () => { form.email.value = u.email; form.password.value = passwordFor(u.id); err.style.display = 'none'; };
-      list.appendChild(b);
+      else errBox.style.display = 'block';
     });
   </script>
 </body>
