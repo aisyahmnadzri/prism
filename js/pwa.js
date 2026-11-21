@@ -8,7 +8,20 @@
   root.classList.toggle('is-ios', isIOS && !isApp);
 
   if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
-    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { /* app still works without it */ }));
+    window.addEventListener('load', () => {
+      // updateViaCache 'none': always check the server for a newer service worker
+      navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+        .then(reg => reg.update())
+        .catch(() => { /* app still works without it */ });
+    });
+    // When a newer version takes over, reload once so the new layout shows straight away.
+    const hadController = !!navigator.serviceWorker.controller;
+    let reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!hadController || reloaded) return;
+      reloaded = true;
+      location.reload();
+    });
   }
 
   let deferred = null;

@@ -1,7 +1,7 @@
 // PRISM service worker: keeps the app shell available so PRISM opens fast and works with a weak or no signal.
 // Strategy: network first (so updates show up straight away), falling back to the saved copy when offline.
 // Bump VERSION whenever the list of files changes.
-const VERSION = 'prism-v3';
+const VERSION = 'prism-v4';
 const SHELL = [
   './', 'index.html', 'offline.html',
   'dashboard.html', 'pipeline.html', 'schedule.html', 'approvals.html', 'messages.html', 'notifications.html',
@@ -42,10 +42,11 @@ self.addEventListener('fetch', event => {
   }
   if (url.origin !== self.location.origin) return;
 
-  // App files: try the network, save a fresh copy, fall back to the saved copy (ignoring ?id=… etc.).
+  // App files: ask the server for the latest version (skipping the browser's short-term cache),
+  // save a fresh copy, and fall back to the saved copy when offline (ignoring ?id=… etc.).
   event.respondWith((async () => {
     try {
-      const res = await fetch(req);
+      const res = await fetch(req, { cache: 'no-cache' });
       if (res.ok) { const cache = await caches.open(VERSION); cache.put(req, res.clone()); }
       return res;
     } catch (err) {
