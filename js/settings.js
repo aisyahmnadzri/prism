@@ -103,6 +103,42 @@ function rulesCard() {
       <div class="actions full"><span style="flex:1"></span><button type="submit" class="btn btn-primary">Save rules</button></div>
     </form></div>`;
 }
+function dataCard() {
+  const msgCount = Object.values(M().threads).reduce((n, t) => n + t.length, 0);
+  const counts = [['Accounts', accounts.length], ['Tickets', loadTickets().items.length], ['Messages', msgCount], ['Feedback', loadFb().items.length]];
+  return `<div class="card set-card">${setHead('Workspace data', 'Everything people have entered in this workspace')}
+    <div class="data-counts">${counts.map(([l, n]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}</div>
+    <p class="sub set-note">${icon('alert')} Prototype: data is saved in this browser only. People, roles and settings aren't affected by these buttons.</p>
+    <div class="actions">
+      <button type="button" class="btn" data-set="load-sample">${icon('download')} Load sample data</button>
+      <span style="flex:1"></span>
+      <button type="button" class="btn btn-danger" data-set="erase-all">${icon('trash')} Erase all data</button>
+    </div></div>`;
+}
+function replaceWorkspaceData(sample) {
+  accounts = sample ? seedAccounts() : [];
+  saveAccounts(accounts);
+  saveMsgs(sample ? seedMessages() : emptyMsgs()); reloadMsgs();
+  saveTickets(sample ? seedTickets() : { items: [] });
+  saveFb(sample ? seedFeedback() : { items: [] });
+  try { localStorage.removeItem(NOTIF_KEY); localStorage.removeItem(AUDIT_KEY); } catch (e) { /* ignore */ }
+  notifUI.seen = null;
+}
+function loadSampleData() {
+  if (!confirm('Replace everything in this workspace with sample data? Any accounts, tickets, messages and feedback you entered will be removed.')) return;
+  replaceWorkspaceData(true);
+  auditLog(user.id, 'Loaded sample data');
+  toast('Sample data loaded');
+  render();
+}
+function eraseAllData() {
+  if (!confirm('Erase all accounts, tickets, messages, feedback, notifications and audit history in this workspace? This cannot be undone.')) return;
+  replaceWorkspaceData(false);
+  auditLog(user.id, 'Erased all workspace data');
+  toast('Workspace erased. It is now empty');
+  render();
+}
+
 function saveRules(form) {
   const f = form.elements, remindDays = Number(f.remindDays.value), escalateDays = Number(f.escalateDays.value);
   if (!Number.isInteger(remindDays) || remindDays < 1 || remindDays > 30) return setError('rulesError', 'Reminder days must be a whole number from 1 to 30.');
@@ -219,6 +255,7 @@ function workspaceSection() {
         <button type="submit" class="btn btn-primary">Save stages</button></div>
     </form></div>
   ${rulesCard()}
+  ${dataCard()}
   <div class="card set-card">${setHead('People and roles', `${USERS.length} people can sign in to PRISM`)}
     <form id="peopleForm" novalidate>
       <div class="error" id="peopleError"></div>
@@ -347,6 +384,8 @@ document.addEventListener('click', e => {
   else if (act === 'stages-reset') resetStages();
   else if (act === 'remove-user') removePerson(b.dataset.id);
   else if (act === 'away-clear') clearAway();
+  else if (act === 'load-sample') loadSampleData();
+  else if (act === 'erase-all') eraseAllData();
 });
 document.addEventListener('change', e => {
   if (isEl(e.target, '[data-set-app]')) saveAppearance(e.target);

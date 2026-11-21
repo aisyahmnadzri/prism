@@ -2,7 +2,7 @@
 // The feed is derived from what already happened in PRISM (approvals, history, messages, schedule, deadlines),
 // so nothing has to be "sent". Only read state and preferences are stored. Loaded before app.js.
 
-const NOTIF_KEY = 'prism_notifs_v1';
+const NOTIF_KEY = 'prism_notifs_v2';
 const NOTIF_KINDS = {
   approval: { label: 'Approvals', icon: 'check', color: '#7c3aed', desc: 'Someone needs your approval to move a POC forward' },
   stage: { label: 'Stage updates', icon: 'kanban', color: '#0ea5e9', desc: 'Requests, approvals, returns and decisions on your accounts' },
@@ -19,7 +19,7 @@ const HISTORY_WINDOW_DAYS = 14;
 // ---------- Store (per person: read items, "mark all read" time, preferences) ----------
 function notifStore() { try { return JSON.parse(localStorage.getItem(NOTIF_KEY)) || {}; } catch (e) { return {}; } }
 function saveNotif(s) { try { localStorage.setItem(NOTIF_KEY, JSON.stringify(s)); } catch (e) { /* ignore */ } }
-const blankMe = () => ({ readIds: {}, readAllAt: new Date(Date.now() - 2 * 86400000).toISOString(), prefs: {} }); // demo: older than 2 days = read
+const blankMe = () => ({ readIds: {}, readAllAt: new Date(0).toISOString(), prefs: {} });
 function notifMe() { return notifStore()[user.id] || blankMe(); }
 function updateMe(fn) { const s = notifStore(); s[user.id] = s[user.id] || blankMe(); fn(s[user.id]); saveNotif(s); }
 const prefOn = k => notifMe().prefs[k] !== false;

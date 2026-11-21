@@ -1677,3 +1677,17 @@ mark { background: color-mix(in srgb, #fbbf24 45%, transparent); color: inherit;
   .tk-sub { grid-template-columns: minmax(0, 1fr); }
   .tk-table td.c-name .tk-id { display: block; }
 }
+
+/* ---------- Empty workspace ---------- */
+.welcome-steps { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.welcome-step h3 { font-size: 16px; margin: 14px 0 4px; }
+.welcome-step p { margin: 0; font-size: 13px; }
+.welcome-step .stat-foot { color: var(--accent); font-weight: 700; }
+.data-counts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
+.data-counts > div { background: var(--surface-2); border-radius: 12px; padding: 10px; text-align: center; }
+.data-counts b { display: block; font-family: var(--font-head); font-size: 22px; font-weight: 800; }
+.data-counts span { font-size: 11.5px; color: var(--muted); font-weight: 600; }
+@media (max-width: 860px) {
+  .welcome-steps { grid-template-columns: minmax(0, 1fr); }
+  .data-counts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

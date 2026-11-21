@@ -484,7 +484,30 @@ function heroBanner(active) {
     ${HERO_ART}</section>`;
 }
 
+// Shown while the workspace has no accounts yet
+function welcomePage() {
+  const tl = user.role === 'TL';
+  const steps = tl ? [
+    ['users', 'Set up your team', 'Rename the test users or add your real team, and set each person\'s role.', 'settings.html?tab=workspace', 'Open Settings'],
+    ['building', 'Add your first account', 'Create a POC account and assign its Account Manager and Developers.', 'account-form.html', 'Add account'],
+    ['kanban', 'Track it through the stages', 'Upload documents, request approvals and log progress as the POC moves forward.', 'pipeline.html', 'Open pipeline'],
+  ] : [
+    ['building', 'Wait for an account', 'The AI Team Lead adds you to accounts. They appear here with their stages and approvals.', 'accounts.html', 'Accounts'],
+    ['ticket', 'Track your work', 'Create and work on tickets assigned to you, even before an account exists.', 'tickets.html', 'Open tickets'],
+    ['chat', 'Talk to the team', 'Send direct messages or start a group chat.', 'messages.html', 'Open messages'],
+  ];
+  return `<section class="hero welcome"><div><span class="eyebrow">${icon('sparkles')} Welcome to PRISM</span>
+      <h2>${tl ? "Let's set up your first POC" : `Hi ${esc(user.name.split(' ')[0])}, there's nothing here yet`}</h2>
+      <p>${tl ? 'This workspace is empty. Add an account to start tracking it through the 10-stage POC lifecycle, or load sample data from Settings to explore.' : 'No accounts are assigned to you yet. Once the AI Team Lead adds you to one, your dashboard fills up automatically.'}</p>
+      ${tl ? `<div class="hero-actions"><a class="btn btn-light" href="account-form.html">${icon('plus')} Add first account</a>
+        <a class="btn btn-ghost-light" href="settings.html?tab=workspace">${icon('gear')} Workspace settings</a></div>` : ''}</div>${HERO_ART}</section>
+    <div class="cards welcome-steps">${steps.map(([ic, t, d, href, cta], i) => `<a class="card stat tone-violet welcome-step" href="${href}">
+      <div class="stat-top"><span class="stat-ic">${icon(ic)}</span><span class="label">Step ${i + 1}</span></div>
+      <h3>${t}</h3><p class="sub">${d}</p><span class="stat-foot">${cta} →</span></a>`).join('')}</div>`;
+}
+
 function dashboardPage(list) {
+  if (!visibleAccounts({ archived: true }).length) return welcomePage();
   const active = list.filter(a => !a.outcome);
   return `${heroBanner(active)}${kpiTiles(list, active)}
     <div class="viz-row r-1-2">${statusDonut(active)}${phaseFunnel(list, active)}</div>
@@ -881,7 +904,6 @@ function buildShell() {
           <button class="icon-btn" id="logoutBtn" type="button" title="Log out" aria-label="Log out">${icon('logout')}</button>
         </div>
         <button class="reset-link install-link" type="button" data-pwa-install>${icon('plus')} Install PRISM app</button>
-        <button class="reset-link" id="resetBtn" type="button">${icon('refresh')} Reset demo data</button>
       </div>
     </aside>
     <main class="main">
@@ -896,13 +918,6 @@ function buildShell() {
 
   const content = document.getElementById('content');
   document.getElementById('logoutBtn').onclick = logout;
-  document.getElementById('resetBtn').onclick = () => {
-    resetAccounts(); accounts = loadAccounts();
-    updateSettings(s => { delete s.workspace; }); applyWorkspace(); Object.assign(user, userById(user.id) || {});
-    try { localStorage.removeItem(MSG_KEY); localStorage.removeItem(NOTIF_KEY); localStorage.removeItem(FB_KEY); localStorage.removeItem(TK_KEY); } catch (e) { /* ignore */ }
-    notifUI.seen = null;
-    reloadMsgs(); render(); toast('Demo data reset');
-  };
 
   // Pipeline filters: redraw only the board so the search box keeps focus while typing.
   content.addEventListener('input', e => {

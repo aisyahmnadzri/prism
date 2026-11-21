@@ -2,11 +2,11 @@
 
 **Project Reporting & Insight System Manager**: an internal tool for the AI Team to track every POC account from first opportunity to the go / no-go decision.
 
-> **Prototype.** All data is sample data stored in your own browser. Sign-in uses demo accounts, and nothing is sent to a server. A real backend (shared database, secure sign-in, push notifications) comes next.
+> **Prototype.** The workspace starts empty and everything you enter is stored in your own browser. Sign-in uses test users, and nothing is sent to a server. The Team Lead can load sample data (or erase everything) in Settings › Workspace. A real backend (shared database, secure sign-in, push notifications) comes next.
 
 ## Try it
 
-Open the site, then pick any demo account on the sign-in page (the password is filled in for you).
+Open the site, then pick a test user on the sign-in page (the password is filled in for you). Start as the AI Team Lead to set up your team and add the first account.
 
 | Role | Can do |
 |---|---|

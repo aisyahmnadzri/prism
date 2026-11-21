@@ -165,16 +165,15 @@ function seedApprovals(list) {
 }
 
 // ---- storage helpers (browser storage; real backend later) ----
-const STORE_KEY = 'prism_accounts_v6';
+const STORE_KEY = 'prism_accounts_v7';
 
 function loadAccounts() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) return JSON.parse(raw).map(a => ({ events: [], plan: null, archived: null, approvals: [], evidenceBy: [], extension: null, ...a }));
   } catch (e) { /* ignore */ }
-  const seeded = seedAccounts();
-  saveAccounts(seeded);
-  return seeded;
+  saveAccounts([]); // real workspace starts empty; sample data can be loaded from Settings › Workspace
+  return [];
 }
 
 function saveAccounts(accounts) {
@@ -186,7 +185,7 @@ function resetAccounts() {
 }
 
 // ---- Workspace audit log (changes that aren't tied to one account, e.g. stage settings, people) ----
-const AUDIT_KEY = 'prism_audit_v1';
+const AUDIT_KEY = 'prism_audit_v2';
 function loadAudit() { try { return JSON.parse(localStorage.getItem(AUDIT_KEY)) || []; } catch (e) { return []; } }
 function auditLog(by, text) {
   const list = loadAudit();
@@ -256,6 +255,13 @@ function applyAppearance() {
   if (!el) { el = document.createElement('style'); el.id = 'userColors'; document.head.appendChild(el); }
   el.textContent = css;
 }
+
+// Remove demo data saved by earlier prototype versions (sign-ins, profiles and settings are kept).
+(function purgeLegacyData() {
+  const legacy = ['prism_accounts_v1', 'prism_accounts_v2', 'prism_accounts_v3', 'prism_accounts_v4', 'prism_accounts_v5', 'prism_accounts_v6',
+    'prism_messages_v1', 'prism_tickets_v1', 'prism_feedback_v1', 'prism_notifs_v1', 'prism_audit_v1'];
+  try { legacy.forEach(k => localStorage.removeItem(k)); } catch (e) { /* ignore */ }
+})();
 
 applyWorkspace();
 applyAppearance();

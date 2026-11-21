@@ -2,7 +2,7 @@
 // The Team Lead sets the status of each item. Prototype: stored in this browser (shared once there's a backend).
 // Loaded before app.js; app.js helpers are used at call time only.
 
-const FB_KEY = 'prism_feedback_v1';
+const FB_KEY = 'prism_feedback_v2';
 const FB_TYPES = { idea: { label: 'New idea', color: '#7c3aed' }, improvement: { label: 'Improvement', color: '#0ea5e9' }, bug: { label: 'Bug', color: '#e11d48' }, other: { label: 'Other', color: '#64748b' } };
 const FB_STATUSES = { new: 'New', review: 'Under review', planned: 'Planned', done: 'Done', declined: 'Not planned' };
 const FB_IMPACT = { nice: 'Nice to have', important: 'Important', critical: 'Critical' };
@@ -22,7 +22,7 @@ function seedFeedback() {
       title: 'Drag a POC card to request the next stage', details: 'Dragging a card to the next column could open the approval request with the checklist.' },
   ] };
 }
-function loadFb() { try { const s = JSON.parse(localStorage.getItem(FB_KEY)); if (s) return s; } catch (e) { /* ignore */ } const s = seedFeedback(); saveFb(s); return s; }
+function loadFb() { try { const s = JSON.parse(localStorage.getItem(FB_KEY)); if (s) return s; } catch (e) { /* ignore */ } const s = { items: [] }; saveFb(s); return s; }
 function saveFb(s) { try { localStorage.setItem(FB_KEY, JSON.stringify(s)); } catch (e) { /* ignore */ } }
 
 function feedbackPage() {
