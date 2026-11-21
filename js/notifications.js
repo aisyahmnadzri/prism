@@ -32,7 +32,7 @@ function buildFeed({ includeMuted = false } = {}) {
   const add = o => { const t = new Date(o.at).getTime(); if (t >= horizon && t <= now + 60000) items.push(o); };
   const acc = a => `<span class="n-acc">${esc(a.name)}</span>`;
 
-  accounts.forEach(a => {
+  accounts.filter(a => !a.archived).forEach(a => {
     if (canApprove(a)) {
       const move = a.stage === 10 ? 'Go / No-Go decision' : `${esc(stageOf(a).name)} → ${esc(STAGES[a.stage].name)}`;
       add({ id: `apr:${a.id}:${a.pending.at}`, kind: 'approval', at: a.pending.at, href: accountLink(a),

@@ -41,7 +41,7 @@ function daysAgo(n) {
 //   pending  — set when someone requests approval to move to the next stage
 //   updates  — progress updates (newest first); history — activity log (newest first)
 function acct(o) {
-  return { sector: 'Public', pending: null, outcome: null, updates: [], history: [], events: [], plan: null, ...o };
+  return { sector: 'Public', pending: null, outcome: null, archived: null, updates: [], history: [], events: [], plan: null, ...o };
 }
 
 function seedAccounts() {
@@ -85,8 +85,8 @@ function seedAccounts() {
         { by: 'u6', at: daysAgo(95), text: 'Decision: POC extended — back to POC Development' },
       ] }),
     acct({ id: 'ACC-010', name: 'State Tourism Board', useCase: 'Visitor itinerary recommender', am: 'u3', devs: ['u4'], stage: 10, status: 'On Track', progress: 100, stageSince: daysAgo(45),
-      evidence: ['Decision_Memo_STB.pdf'], outcome: 'Closed',
-      history: [{ by: 'u6', at: daysAgo(45), text: 'Decision: POC closed' }] }),
+      evidence: ['Decision_Memo_STB.pdf'], outcome: 'Closed', archived: { at: daysAgo(30), by: 'u1' },
+      history: [{ by: 'u1', at: daysAgo(30), text: 'Archived the account' }, { by: 'u6', at: daysAgo(45), text: 'Decision: POC closed' }] }),
   ];
   seedSchedule(list);
   return list;
@@ -141,12 +141,12 @@ function seedSchedule(list) {
 }
 
 // ---- storage helpers (browser storage; real backend later) ----
-const STORE_KEY = 'prism_accounts_v4';
+const STORE_KEY = 'prism_accounts_v5';
 
 function loadAccounts() {
   try {
     const raw = localStorage.getItem(STORE_KEY);
-    if (raw) return JSON.parse(raw).map(a => ({ events: [], plan: null, ...a }));
+    if (raw) return JSON.parse(raw).map(a => ({ events: [], plan: null, archived: null, ...a }));
   } catch (e) { /* ignore */ }
   const seeded = seedAccounts();
   saveAccounts(seeded);
@@ -158,7 +158,16 @@ function saveAccounts(accounts) {
 }
 
 function resetAccounts() {
-  try { localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+  try { localStorage.removeItem(STORE_KEY); localStorage.removeItem(AUDIT_KEY); } catch (e) { /* ignore */ }
+}
+
+// ---- Workspace audit log (changes that aren't tied to one account, e.g. stage settings, people) ----
+const AUDIT_KEY = 'prism_audit_v1';
+function loadAudit() { try { return JSON.parse(localStorage.getItem(AUDIT_KEY)) || []; } catch (e) { return []; } }
+function auditLog(by, text) {
+  const list = loadAudit();
+  list.unshift({ by, at: new Date().toISOString(), text });
+  try { localStorage.setItem(AUDIT_KEY, JSON.stringify(list.slice(0, 500))); } catch (e) { /* ignore */ }
 }
 
 function userById(id) {

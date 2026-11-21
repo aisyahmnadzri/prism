@@ -93,7 +93,7 @@ function threadInfo(key) {
 }
 function myThreads() {
   const keys = [
-    ...accounts.map(a => 'acc:' + a.id),
+    ...accounts.filter(a => !a.archived).map(a => 'acc:' + a.id),
     ...USERS.filter(u => u.id !== user.id).map(u => dmKey(user.id, u.id)),
     ...M().groups.map(g => 'grp:' + g.id),
   ];
@@ -290,7 +290,7 @@ function accountDiscussionCard(a) {
     <div class="discuss-head"><h3 class="card-title">Discussion ${unread ? `<span class="t-badge">${unread}</span>` : ''}</h3>
       <a class="btn btn-sm" href="messages.html?t=${encodeURIComponent(th.key)}">Open in Messages</a></div>
     <div class="conv-body compact" id="convBody">${messagesHtml(th.key, true)}</div>
-    ${composerHtml(th)}</div>`;
+    ${a.archived ? `<p class="sub archived-note">${icon('archive')} This account is archived, so its discussion is read-only.</p>` : composerHtml(th)}</div>`;
 }
 
 // ---------- Mentions ----------

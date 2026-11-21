@@ -187,8 +187,11 @@ function saveStages(form) {
   }
   const missing = [...new Set(Object.values(stages).map(x => x.approver))].filter(r => !USERS.some(u => u.role === r));
   if (missing.length) return setError('stagesError', `Nobody has the ${missing.map(r => ROLES[r].label).join(' / ')} role, so they couldn't approve. Add someone first.`);
+  const changed = STAGES.filter(x => { const n = stages[x.id]; return n.targetDays !== x.targetDays || n.approver !== x.approver || n.skippable !== x.skippable; })
+    .map(x => `Stage ${x.id}`);
   updateSettings(s => { s.workspace = { ...(s.workspace || {}), stages }; });
   applyWorkspace();
+  if (changed.length) auditLog(user.id, `Changed POC stage settings: ${changed.join(', ')}`);
   toast('Stage settings saved');
   render();
 }
@@ -197,6 +200,7 @@ function resetStages() {
   if (!confirm('Restore every stage to its default target days, approver and optional setting?')) return;
   updateSettings(s => { if (s.workspace) delete s.workspace.stages; });
   applyWorkspace();
+  auditLog(user.id, 'Restored POC stage settings to defaults');
   toast('Stages restored to defaults');
   render();
 }
@@ -225,6 +229,17 @@ function checkPeople(list) {
 }
 
 function commitPeople(list, msg) {
+  // Record what changed for the audit trail
+  const before = USERS.map(u => ({ ...u }));
+  list.filter(u => !before.some(b => b.id === u.id)).forEach(u => auditLog(user.id, `Added ${u.name} as ${ROLES[u.role].label}`));
+  before.filter(b => !list.some(u => u.id === b.id)).forEach(b => auditLog(user.id, `Removed ${b.name} from PRISM`));
+  list.forEach(u => {
+    const b = before.find(x => x.id === u.id);
+    if (!b) return;
+    if (b.role !== u.role) auditLog(user.id, `Changed ${u.name}'s role: ${ROLES[b.role].label} → ${ROLES[u.role].label}`);
+    if (b.name !== u.name) auditLog(user.id, `Renamed ${b.name} to ${u.name}`);
+    if (b.email !== u.email) auditLog(user.id, `Changed ${u.name}'s email`);
+  });
   updateSettings(s => { s.workspace = { ...(s.workspace || {}), users: list }; });
   applyWorkspace();
   Object.assign(user, userById(user.id)); // keep the signed-in person's details current

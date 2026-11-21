@@ -3,16 +3,19 @@ const user = requireAuth();
 let accounts = loadAccounts();
 
 const PAGES = {
-  dashboard: { file: 'dashboard.html', label: 'Dashboard', roles: ['TL', 'AM', 'DEV'] },
-  pipeline: { file: 'pipeline.html', label: 'Pipeline', roles: ['TL', 'AM', 'DEV'] },
-  schedule: { file: 'schedule.html', label: 'Schedule', roles: ['TL', 'AM', 'DEV'] },
-  approvals: { file: 'approvals.html', label: 'Approvals', roles: ['TL', 'AM', 'HM'] },
-  messages: { file: 'messages.html', label: 'Messages', roles: ['TL', 'AM', 'DEV', 'HM'] },
-  accounts: { file: 'accounts.html', label: 'Accounts', roles: ['TL', 'AM', 'DEV'] },
+  dashboard: { file: 'dashboard.html', label: 'Dashboard', roles: ['TL', 'AM', 'DEV'], group: 'Workspace' },
+  pipeline: { file: 'pipeline.html', label: 'Pipeline', roles: ['TL', 'AM', 'DEV'], group: 'Workspace' },
+  schedule: { file: 'schedule.html', label: 'Schedule', roles: ['TL', 'AM', 'DEV'], group: 'Workspace' },
+  approvals: { file: 'approvals.html', label: 'Approvals', roles: ['TL', 'AM', 'HM'], group: 'Workspace' },
+  messages: { file: 'messages.html', label: 'Messages', roles: ['TL', 'AM', 'DEV', 'HM'], group: 'Workspace' },
+  accounts: { file: 'accounts.html', label: 'Accounts', roles: ['TL', 'AM', 'DEV'], group: 'Workspace' },
   account: { file: 'account.html', label: 'Account', roles: ['TL', 'AM', 'DEV', 'HM'], hidden: true },
   'account-form': { file: 'account-form.html', label: 'Account form', roles: ['TL', 'AM'], hidden: true },
   notifications: { file: 'notifications.html', label: 'Notifications', roles: ['TL', 'AM', 'DEV', 'HM'], hidden: true },
-  settings: { file: 'settings.html', label: 'Settings', roles: ['TL', 'AM', 'DEV', 'HM'] },
+  reports: { file: 'reports.html', label: 'Reports', roles: ['TL', 'AM', 'HM'], group: 'Insights' },
+  audit: { file: 'audit.html', label: 'Audit trail', roles: ['TL'], group: 'Insights' },
+  feedback: { file: 'feedback.html', label: 'Feedback', roles: ['TL', 'AM', 'DEV', 'HM'], group: 'General' },
+  settings: { file: 'settings.html', label: 'Settings', roles: ['TL', 'AM', 'DEV', 'HM'], group: 'General' },
 };
 
 const page = document.body.dataset.page;
@@ -65,6 +68,12 @@ const ICONS = {
   trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>',
   dots: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  chart: '<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/>',
+  history: '<path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/>',
+  bulb: '<path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2Z"/>',
+  archive: '<rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8M10 12h4"/>',
+  download: '<path d="M12 3v12M7 10l5 5 5-5M5 21h14"/>',
+  up: '<path d="M12 19V5M5 12l7-7 7 7"/>',
   bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   at: '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
   chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 13h5"/>',
@@ -96,7 +105,7 @@ const PANEL_ICON = {
   'Approval aging': 'hourglass', 'POC outcomes': 'trophy', 'Time in stage vs target': 'gauge', 'Workload by status': 'users',
   'Team activity': 'activity', 'My to-dos': 'listcheck',
 };
-const NAV_ICON = { dashboard: 'grid', pipeline: 'kanban', schedule: 'calendar', approvals: 'check', messages: 'chat', accounts: 'building', settings: 'gear' };
+const NAV_ICON = { dashboard: 'grid', pipeline: 'kanban', schedule: 'calendar', approvals: 'check', messages: 'chat', accounts: 'building', reports: 'chart', audit: 'history', feedback: 'bulb', settings: 'gear' };
 
 // ---- Access rules ----
 function canView(a) {
@@ -113,8 +122,34 @@ const canEdit = a => !a.outcome && user.role !== 'HM' && canView(a);
 const canEditDetails = a => user.role === 'TL' || (user.role === 'AM' && a.am === user.id);
 const canCreate = user.role === 'TL';
 
-function visibleAccounts() {
-  return user.role === 'HM' ? [] : accounts.filter(canView);
+// Active views leave archived accounts out; pass { archived: true } to include them.
+function visibleAccounts({ archived = false } = {}) {
+  const list = user.role === 'HM' ? [] : accounts.filter(canView);
+  return archived ? list : list.filter(a => !a.archived);
+}
+// Only decided POCs (Converted / Closed) can be archived, and only by the Team Lead.
+const canArchive = a => user.role === 'TL' && !!a.outcome;
+
+function archiveAccount(id, ask = true) {
+  const a = find(id);
+  if (!a || !canArchive(a) || a.archived) return false;
+  if (ask && !confirm(`Archive ${a.name}? It will be hidden from active views. Its history is kept and you can restore it any time.`)) return false;
+  a.archived = { at: new Date().toISOString(), by: user.id };
+  log(a, 'Archived the account');
+  return true;
+}
+function restoreAccount(id) {
+  const a = find(id);
+  if (!a || user.role !== 'TL' || !a.archived) return;
+  a.archived = null;
+  log(a, 'Restored the account from the archive');
+  commit(`${a.name} restored`);
+}
+function archiveAllDecided() {
+  const decided = visibleAccounts().filter(a => a.outcome);
+  if (!decided.length || !confirm(`Archive ${decided.length} decided POC${decided.length === 1 ? '' : 's'}? Their history is kept and you can restore them any time.`)) return;
+  decided.forEach(a => archiveAccount(a.id, false));
+  commit(`${decided.length} account${decided.length === 1 ? '' : 's'} archived`);
 }
 
 function canApprove(a) {
@@ -477,7 +512,7 @@ function dashboardPage(list) {
   return `${heroBanner(active)}${kpiTiles(list, active)}
     <div class="viz-row r-1-2">${statusDonut(active)}${phaseFunnel(list, active)}</div>
     <div class="viz-row r-3-2">${riskMap(active)}${deadlineTimeline(active)}</div>
-    <div class="viz-row r-3">${approvalAging(active)}${outcomesDonut(list)}${stageTiming(active)}</div>
+    <div class="viz-row r-3">${approvalAging(active)}${outcomesDonut(visibleAccounts({ archived: true }))}${stageTiming(active)}</div>
     <div class="viz-row ${user.role === 'TL' ? 'r-3' : 'r-2'}">${user.role === 'TL' ? workload(active) : ''}${activityPanel(list)}${todoPanel(list, active)}</div>`;
 }
 
@@ -631,7 +666,18 @@ function approvalsPage() {
 }
 
 // ---- Page: Accounts ----
-function accountsPage(list) {
+function accountsPage(activeList) {
+  const view = new URLSearchParams(location.search).get('view') === 'archived' ? 'archived' : 'active';
+  const archivedList = visibleAccounts({ archived: true }).filter(a => a.archived);
+  const list = view === 'archived' ? archivedList : activeList;
+  const tabs = `<div class="acc-bar"><div class="seg" role="tablist">
+      <a href="accounts.html" role="tab" class="seg-link ${view === 'active' ? 'on' : ''}">Active<span class="n">${activeList.length}</span></a>
+      <a href="accounts.html?view=archived" role="tab" class="seg-link ${view === 'archived' ? 'on' : ''}">${icon('archive')} Archived<span class="n">${archivedList.length}</span></a></div>
+    ${canCreate && view === 'active' ? `<a class="btn btn-primary" href="account-form.html">${icon('plus')} New account</a>` : ''}</div>`;
+  const decided = activeList.filter(a => a.outcome);
+  const hint = view === 'active' && user.role === 'TL' && decided.length
+    ? `<div class="archive-hint">${icon('archive')}<span><b>${decided.length} decided POC${decided.length === 1 ? '' : 's'}</b> (converted or closed) can be moved to the archive to keep active views focused.</span>
+        <button type="button" class="btn btn-sm" data-act="archive-all">Archive ${decided.length === 1 ? 'it' : 'all'}</button></div>` : '';
   const rows = list.map(a => {
     const s = stageOf(a);
     const devs = a.devs.map(nameOf).join(', ') || '<span class="sub">Unassigned</span>';
@@ -646,12 +692,14 @@ function accountsPage(list) {
       <td data-label="Days in stage">${a.outcome ? '—' : `${daysIn(a)} / ${s.targetDays}d${isOverdue(a) ? ' <span class="overdue">overdue</span>' : ''}`}</td>
       <td data-label="Account Manager">${esc(nameOf(a.am))}</td>
       <td data-label="Developers">${devs}</td>
+      ${view === 'archived' ? `<td data-label="Archived">${fmtDate(a.archived.at)}<div class="sub">by ${esc(nameOf(a.archived.by))}</div>
+        ${user.role === 'TL' ? `<button type="button" class="btn btn-sm restore-btn" data-act="restore" data-id="${a.id}">Restore</button>` : ''}</td>` : ''}
     </tr>`;
   }).join('');
-  const toolbar = canCreate ? `<div class="toolbar"><a class="btn btn-primary" href="account-form.html">${icon('plus')} New account</a></div>` : '';
-  return `${toolbar}<div class="table-wrap"><table>
-      <thead><tr><th>Account</th><th>Use case</th><th>Stage</th><th>Status</th><th>Progress</th><th>Days in stage</th><th>Account Manager</th><th>Developers</th></tr></thead>
-      <tbody>${rows || '<tr><td colspan="8" class="sub">No accounts assigned.</td></tr>'}</tbody>
+  const empty = view === 'archived' ? 'No archived accounts. Converted or closed POCs can be archived by the Team Lead.' : 'No accounts assigned.';
+  return `${tabs}${hint}<div class="table-wrap"><table>
+      <thead><tr><th>Account</th><th>Use case</th><th>Stage</th><th>Status</th><th>Progress</th><th>Days in stage</th><th>Account Manager</th><th>Developers</th>${view === 'archived' ? '<th>Archived</th>' : ''}</tr></thead>
+      <tbody>${rows || `<tr><td colspan="9" class="sub">${empty}</td></tr>`}</tbody>
     </table></div>`;
 }
 
@@ -746,12 +794,15 @@ function accountPage() {
     ['Sector', `${a.sector} sector`],
   ];
   if (a.contact) facts.push(['Agency contact', esc(a.contact)]);
-  const editBtn = canEditDetails(a) ? `<a class="btn btn-sm" href="account-form.html?id=${encodeURIComponent(a.id)}">Edit details</a>` : '';
-  return `
+  const editBtn = canEditDetails(a) && !a.archived ? `<a class="btn btn-sm" href="account-form.html?id=${encodeURIComponent(a.id)}">Edit details</a>` : '';
+  const archiveBtn = canArchive(a) && !a.archived ? `<button type="button" class="btn btn-sm" data-act="archive" data-id="${a.id}">${icon('archive')} Archive</button>` : '';
+  const banner = a.archived ? `<div class="archived-banner">${icon('archive')}<span><b>Archived</b> on ${fmtDate(a.archived.at)} by ${esc(nameOf(a.archived.by))}. It's hidden from active views; everything below is kept for reference.</span>
+      ${user.role === 'TL' ? `<button type="button" class="btn btn-sm" data-act="restore" data-id="${a.id}">Restore</button>` : ''}</div>` : '';
+  return `${banner}
     <div class="card detail-head">
       <div class="detail-title"><div><div class="sub">${a.id}</div><div class="use-case">${esc(a.useCase)}</div>
         ${a.description ? `<p class="description">${esc(a.description)}</p>` : ''}</div>
-        <div class="head-actions">${status}${editBtn}</div></div>
+        <div class="head-actions">${status}${editBtn}${archiveBtn}</div></div>
       <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
     </div>
     <section class="section"><h2>POC lifecycle</h2><div class="card">${stepper(a)}</div></section>
@@ -852,6 +903,9 @@ function pageHeading() {
     accounts: [user.role === 'TL' ? 'All accounts' : 'My accounts', `Details of ${mine}. Click an account to open it.`],
     messages: ['Messages', 'Account discussions, direct messages and group chats.'],
     notifications: ['Notifications', 'Everything that needs your attention from the last two weeks.'],
+    reports: ['Reports', 'A POC status summary for management meetings. Download it as PDF or Excel.'],
+    audit: ['Audit trail', 'Every change across PRISM: who did what, and when.'],
+    feedback: ['Feedback', 'Share ideas to make PRISM better, and vote for the ones you want most.'],
     settings: ['Settings', user.role === 'TL' ? 'Your profile, how PRISM looks, and how the workspace is set up.' : 'Your profile and how PRISM looks for you.'],
     account: ['Account details', `<a href="${back[0]}">← Back to ${back[1]}</a>`],
     'account-form': formAccount().mode === 'new'
@@ -867,7 +921,6 @@ function buildShell() {
     <aside class="sidebar">
       <a class="brand" href="${PAGES[navPages[0]].file}" style="text-decoration:none">${LOGO}
         <div><span class="brand-name">PRISM</span><small>AI Team · POC tracker</small></div></a>
-      <div class="nav-label">Workspace</div>
       <nav class="nav" id="nav" aria-label="Main"></nav>
       <div class="nav-sheet" id="navSheet" hidden></div>
       <div class="sidebar-foot">
@@ -883,7 +936,7 @@ function buildShell() {
     <main class="main">
       <header class="topbar">
         <div><div class="crumb" id="crumb"></div><h1 id="pageTitle"></h1><p class="sub" id="pageSub"></p></div>
-        <div class="top-actions">${bellHtml()}<span class="date-chip">${icon('calendar')} ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
+        <div class="top-actions">${searchHtml()}${bellHtml()}<span class="date-chip">${icon('calendar')} ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</span></div>
       </header>
       <div id="content"></div>
     </main>
@@ -895,7 +948,7 @@ function buildShell() {
   document.getElementById('resetBtn').onclick = () => {
     resetAccounts(); accounts = loadAccounts();
     updateSettings(s => { delete s.workspace; }); applyWorkspace(); Object.assign(user, userById(user.id) || {});
-    try { localStorage.removeItem(MSG_KEY); localStorage.removeItem(NOTIF_KEY); } catch (e) { /* ignore */ }
+    try { localStorage.removeItem(MSG_KEY); localStorage.removeItem(NOTIF_KEY); localStorage.removeItem(FB_KEY); } catch (e) { /* ignore */ }
     notifUI.seen = null;
     reloadMsgs(); render(); toast('Demo data reset');
   };
@@ -918,7 +971,7 @@ function buildShell() {
     const b = e.target.closest('button[data-act]');
     if (!b) {
       const row = e.target.closest('tr.row-link');
-      if (row && !e.target.closest('a')) location.href = row.dataset.href;
+      if (row && !e.target.closest('a, button')) location.href = row.dataset.href;
       return;
     }
     const { act, id } = b.dataset;
@@ -928,6 +981,9 @@ function buildShell() {
     else if (act === 'request') requestApproval(id);
     else if (act === 'skip') skipStage(id);
     else if (act === 'remove-doc') removeEvidence(id, idx);
+    else if (act === 'archive') { if (archiveAccount(id)) commit('Account archived'); }
+    else if (act === 'archive-all') archiveAllDecided();
+    else if (act === 'restore') restoreAccount(id);
     else if (act === 'attach') {
       const input = document.getElementById('fileInput');
       input.dataset.id = id; input.dataset.idx = idx; input.value = '';
@@ -947,7 +1003,7 @@ function buildShell() {
   });
 }
 
-const MOBILE_ORDER = ['dashboard', 'approvals', 'messages', 'pipeline', 'schedule', 'accounts', 'settings'];
+const MOBILE_ORDER = ['dashboard', 'approvals', 'messages', 'pipeline', 'schedule', 'accounts', 'reports', 'audit', 'feedback', 'settings'];
 function setSheet(open) {
   const s = document.getElementById('navSheet'), b = document.querySelector('[data-nav="more"]');
   if (!s) return;
@@ -972,7 +1028,9 @@ function renderNav() {
   const extraCount = extra.reduce((n, k) => n + badge(k), 0);
   const more = extra.length ? `<button type="button" class="nav-more ${extra.includes(active) ? 'active' : ''}" data-nav="more" aria-expanded="false" aria-controls="navSheet" style="--mo:99">
       ${icon('dots')}<span class="nav-label-text">More</span>${extraCount ? `<span class="count">${extraCount}</span>` : ''}</button>` : '';
-  document.getElementById('nav').innerHTML = navPages.map(link).join('') + more;
+  let lastGroup = null;
+  const withGroups = navPages.map(k => { const g = PAGES[k].group; const head = g && g !== lastGroup ? `<div class="nav-group">${g}</div>` : ''; lastGroup = g; return head + link(k); }).join('');
+  document.getElementById('nav').innerHTML = withGroups + more;
   document.getElementById('navSheet').innerHTML = `<div class="sheet-grip"></div>${extra.map(k => `<a href="${PAGES[k].file}" class="${k === active ? 'active' : ''}">${icon(NAV_ICON[k])}<span>${PAGES[k].label}</span>${badge(k) ? `<span class="count">${badge(k)}</span>` : ''}</a>`).join('')}
     <a href="notifications.html" class="${page === 'notifications' ? 'active' : ''}">${icon('bell')}<span>Notifications</span></a>`;
   renderBell();
@@ -996,6 +1054,9 @@ function render() {
     messages: () => messagesPage(),
     notifications: () => notificationsPage(),
     settings: () => settingsPage(),
+    reports: () => reportsPage(),
+    audit: () => auditPage(),
+    feedback: () => feedbackPage(),
     account: () => accountPage(),
     'account-form': () => accountFormPage(),
   }[page]();
