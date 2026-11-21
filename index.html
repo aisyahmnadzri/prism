@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d1023">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="PRISM">
+  <title>PRISM — Sign in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="login-wrap">
+    <section class="login-hero">
+      <div class="brand">
+        <svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><defs>
+          <linearGradient id="lgA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#c4b5fd"/><stop offset=".5" stop-color="#818cf8"/><stop offset="1" stop-color="#22d3ee"/></linearGradient>
+          <linearGradient id="lgB" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a78bfa"/><stop offset=".35" stop-color="#22d3ee"/><stop offset=".7" stop-color="#fbbf24"/><stop offset="1" stop-color="#fb7185"/></linearGradient></defs>
+          <rect width="40" height="40" rx="11" fill="#1c1f45"/><path d="M18 8 29 29H7Z" fill="url(#lgA)"/><path d="M18 8 21 29h-6Z" fill="#fff" opacity=".35"/>
+          <path d="M24 19.5 36 16v7Z" fill="url(#lgB)" opacity=".95"/></svg>
+        <div><span class="brand-name">PRISM</span><small>Project Reporting &amp; Insight System Manager</small></div>
+      </div>
+
+      <div>
+        <h1>Every AI POC, <span>in full colour.</span></h1>
+        <p>One place for Account Managers, Developers and Team Leads to move each POC from first opportunity to the go / no-go decision, with every gate and approval on record.</p>
+
+        <svg class="login-art" viewBox="0 0 520 200" aria-hidden="true"><defs>
+          <linearGradient id="lBeam" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".95"/></linearGradient>
+          <linearGradient id="lPrism" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".4"/><stop offset="1" stop-color="#fff" stop-opacity=".05"/></linearGradient>
+          <linearGradient id="lFade" x1="0" x2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff" stop-opacity=".1"/></linearGradient>
+          <mask id="lMask"><rect x="268" y="0" width="252" height="200" fill="url(#lFade)"/></mask></defs>
+          <path d="M0 112 L196 104" stroke="url(#lBeam)" stroke-width="3" stroke-linecap="round"/>
+          <g mask="url(#lMask)">
+            <path d="M268 100 L520 22 L520 44 Z" fill="#a78bfa"/><path d="M268 102 L520 50 L520 72 Z" fill="#60a5fa"/>
+            <path d="M268 104 L520 78 L520 100 Z" fill="#22d3ee"/><path d="M268 106 L520 106 L520 128 Z" fill="#34d399"/>
+            <path d="M268 108 L520 134 L520 156 Z" fill="#fbbf24"/><path d="M268 110 L520 162 L520 184 Z" fill="#fb7185"/></g>
+          <path d="M196 104 L268 106" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>
+          <path d="M232 30 L292 150 L172 150 Z" fill="url(#lPrism)" stroke="rgba(255,255,255,.65)" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M232 30 L241 150 L223 150 Z" fill="#fff" opacity=".12"/>
+          <g font-family="Inter, sans-serif" font-size="11" font-weight="600" fill="rgba(255,255,255,.7)">
+            <text x="20" y="98">Raw project activity</text>
+            <text x="440" y="18" text-anchor="end">Clear insight</text></g>
+        </svg>
+
+        <div class="features">
+          <div class="feature"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 7v7M12 7v4M16 7v10"/></svg><b>10-stage pipeline</b><span>From opportunity to decision</span></div>
+          <div class="feature"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8.5 12 2.5 2.5 5-5"/></svg><b>Approval gates</b><span>Nothing skips a step</span></div>
+          <div class="feature"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg><b>Live risk view</b><span>Spot slipping POCs early</span></div>
+        </div>
+      </div>
+
+      <div class="login-foot">Internal use only · AI Team</div>
+    </section>
+
+    <section class="login-panel">
+      <form class="login-card" id="loginForm" novalidate>
+        <h2>Welcome back</h2>
+        <p class="sub">Sign in with your work email to continue.</p>
+        <div class="error" id="error">That email or password isn't right. Try again.</div>
+        <div class="field">
+          <label for="email">Email</label>
+          <div class="input-ic">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+            <input id="email" type="email" autocomplete="username" placeholder="you@company.com" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-ic">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+            <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+          </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Sign in</button>
+        <button class="btn install-link login-install" type="button" data-pwa-install>Install the PRISM app</button>
+
+        <div class="demo">
+          <p>Demo accounts</p>
+          <div class="demo-list" id="demoList"></div>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="js/pwa.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    if (currentUser()) window.location.href = startPageFor(currentUser());
+
+    const form = document.getElementById('loginForm');
+    const err = document.getElementById('error');
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const user = login(form.email.value, form.password.value);
+      if (user) window.location.href = startPageFor(user);
+      else err.style.display = 'block';
+    });
+
+    const list = document.getElementById('demoList');
+    USERS.forEach(u => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      const initials = u.name.split(' ').map(p => p[0]).slice(0, 2).join('');
+      b.innerHTML = `<span class="avatar">${initials}</span><div><b>${u.name}</b><span>${ROLES[u.role].label}</span></div>`;
+      b.onclick = () => { form.email.value = u.email; form.password.value = passwordFor(u.id); err.style.display = 'none'; };
+      list.appendChild(b);
+    });
+  </script>
+</body>
+</html>
