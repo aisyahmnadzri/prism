@@ -30,18 +30,19 @@ function profileSection() {
   return `<div class="card set-card">${setHead('Your profile', 'How you appear to the rest of the team')}
     <div class="profile-hero">
       <span class="avatar xl" id="avPreview" data-u="${user.id}">${esc(initials(user.name))}</span>
-      <div class="profile-id"><b>${esc(user.name)}</b><span>${esc(user.email)}</span>
+      <div class="profile-id"><b>${esc(user.name)}</b><span>${esc(user.email)}</span>${user.personalEmail ? `<span>${esc(user.personalEmail)} · personal</span>` : ''}
         <span class="badge b-pending">${ROLES[user.role].label}</span></div>
     </div>
     <form id="profileForm" class="set-form" novalidate>
       <div class="error" id="profileError"></div>
       <label><span>Job title <span class="sub">(optional)</span></span><input name="title" value="${esc(p.title || '')}" maxlength="80" placeholder="Senior Account Manager"></label>
       <label><span>Phone <span class="sub">(optional)</span></span><input name="phone" type="tel" value="${esc(p.phone || '')}" maxlength="20" placeholder="012-345 6789"></label>
+      <label class="full"><span>Personal email <span class="sub">(optional)</span></span><input name="personalEmail" type="email" value="${esc(user.personalEmail || '')}" maxlength="80" placeholder="name@gmail.com"></label>
       <fieldset class="full swatches"><legend>Avatar colour</legend>
         ${swatches.map(([k, l, c]) => `<label class="swatch"><input type="radio" name="color" value="${k}" ${k === (p.color || '') ? 'checked' : ''}>
           <i style="background:${c ? `linear-gradient(135deg,${c[0]},${c[1]})` : 'linear-gradient(135deg,#7c3aed,#06b6d4)'}"></i><span>${l}</span></label>`).join('')}
       </fieldset>
-      <p class="sub full set-note">${icon('lock')} Your name, email and role are managed by the Team Lead.</p>
+      <p class="sub full set-note">${icon('lock')} Your name, work email and role are managed by the Team Lead. You sign in with your work email.</p>
       <div class="actions full"><button type="submit" class="btn btn-primary">Save profile</button></div>
     </form></div>
   <div class="card set-card">${setHead('Password', 'Change the password you use to sign in')}
@@ -167,8 +168,16 @@ function saveProfile(form) {
   const f = form.elements;
   const v = { title: f.title.value.trim(), phone: f.phone.value.trim(), color: (form.querySelector('input[name=color]:checked') || {}).value || '' };
   if (v.phone && !/^[0-9+()\-\s]{7,20}$/.test(v.phone)) return setError('profileError', 'Enter a phone number using digits, spaces, +, - or brackets.');
+  const pe = f.personalEmail.value.trim();
+  if (pe && !EMAIL_RE.test(pe)) return setError('profileError', 'Enter a valid personal email, or leave it empty.');
   setError('profileError', '');
-  updateSettings(s => { s.profiles = { ...(s.profiles || {}), [user.id]: v }; });
+  updateSettings(s => {
+    s.profiles = { ...(s.profiles || {}), [user.id]: v };
+    const users = (s.workspace && s.workspace.users) || [];
+    s.workspace = { ...(s.workspace || {}), users: users.map(u => u.id === user.id ? withPersonalEmail(u, pe) : u) };
+  });
+  applyWorkspace();
+  user.personalEmail = pe || undefined;
   applyAppearance();
   toast('Profile saved');
 }
@@ -248,7 +257,8 @@ function workspaceSection() {
   const peopleRows = USERS.map(u => `<tr>
       <td><span class="avatar mini role-${u.role}" data-u="${u.id}">${esc(initials(u.name))}</span></td>
       <td data-label="Name"><input name="n_${u.id}" value="${esc(u.name)}" maxlength="60" aria-label="Name"></td>
-      <td data-label="Email"><input name="e_${u.id}" type="email" value="${esc(u.email)}" maxlength="80" aria-label="Email"></td>
+      <td data-label="Work email"><input name="e_${u.id}" type="email" value="${esc(u.email)}" maxlength="80" aria-label="Work email"></td>
+      <td data-label="Personal email"><input name="pe_${u.id}" type="email" value="${esc(u.personalEmail || '')}" maxlength="80" placeholder="Optional" aria-label="Personal email"></td>
       <td data-label="Role"><select name="r_${u.id}" aria-label="Role" ${u.id === user.id ? 'disabled title="You can\'t change your own role"' : ''}>${Object.keys(ROLES).map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></td>
       <td class="assign" data-label="Accounts">${assignmentText(u.id)}</td>
       <td class="person-actions">${u.id === user.id ? '<span class="badge b-pending">You</span>' : `<button type="button" class="icon-del key" data-set="reset-pw" data-id="${u.id}" title="Set a new password for ${esc(u.name)}" aria-label="Reset password for ${esc(u.name)}">${icon('lock')}</button>
@@ -269,7 +279,7 @@ function workspaceSection() {
       ${missingRoles.includes('HM') ? 'Until you add Higher Management, their approvals come to you. ' : ''}${missingRoles.includes('AM') ? 'You need an Account Manager before creating accounts.' : ''}</div>` : ''}
     <form id="peopleForm" novalidate>
       <div class="error" id="peopleError"></div>
-      <div class="set-table-wrap"><table class="set-table people"><thead><tr><th></th><th>Name</th><th>Email</th><th>Role</th><th>Accounts</th><th></th></tr></thead><tbody>${peopleRows}</tbody></table></div>
+      <div class="set-table-wrap"><table class="set-table people"><thead><tr><th></th><th>Name</th><th>Work email</th><th>Personal email</th><th>Role</th><th>Accounts</th><th></th></tr></thead><tbody>${peopleRows}</tbody></table></div>
       <div class="actions"><span style="flex:1"></span><button type="submit" class="btn btn-primary">Save people</button></div>
     </form>
     <form id="addPersonForm" class="add-person" novalidate>
@@ -277,7 +287,8 @@ function workspaceSection() {
       <div class="error" id="addError"></div>
       <div class="add-grid">
         <label><span>Name</span><input name="name" maxlength="60" placeholder="Full name"></label>
-        <label><span>Email</span><input name="email" type="email" maxlength="80" placeholder="name@company.com" autocomplete="off"></label>
+        <label><span>Work email <span class="sub">(to sign in)</span></span><input name="email" type="email" maxlength="80" placeholder="name@company.com" autocomplete="off"></label>
+        <label><span>Personal email <span class="sub">(optional)</span></span><input name="personalEmail" type="email" maxlength="80" placeholder="name@gmail.com" autocomplete="off"></label>
         <label><span>Role</span><select name="role">${Object.keys(ROLES).map(r => `<option value="${r}" ${r === (USERS.some(u => u.role === 'AM') ? 'DEV' : 'AM') ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></label>
         <label><span>Temporary password</span><input name="password" type="text" maxlength="60" placeholder="At least 8 characters" autocomplete="off"></label>
         <button type="submit" class="btn btn-primary">${icon('plus')} Add person</button>
@@ -316,7 +327,8 @@ function checkPeople(list) {
   const names = new Set(), emails = new Set();
   for (const u of list) {
     if (!u.name) return 'Every person needs a name.';
-    if (!EMAIL_RE.test(u.email)) return `${u.name}: enter a valid email address.`;
+    if (!EMAIL_RE.test(u.email)) return `${u.name}: enter a valid work email address.`;
+    if (u.personalEmail && !EMAIL_RE.test(u.personalEmail)) return `${u.name}: enter a valid personal email, or leave it empty.`;
     if (names.has(u.name.toLowerCase())) return `Two people are called ${u.name}. Names must be different.`;
     if (emails.has(u.email.toLowerCase())) return `${u.email} is used twice. Emails must be different.`;
     names.add(u.name.toLowerCase()); emails.add(u.email.toLowerCase());
@@ -344,7 +356,8 @@ function commitPeople(list, msg) {
     if (!b) return;
     if (b.role !== u.role) auditLog(user.id, `Changed ${u.name}'s role: ${ROLES[b.role].label} → ${ROLES[u.role].label}`);
     if (b.name !== u.name) auditLog(user.id, `Renamed ${b.name} to ${u.name}`);
-    if (b.email !== u.email) auditLog(user.id, `Changed ${u.name}'s email`);
+    if (b.email !== u.email) auditLog(user.id, `Changed ${u.name}'s work email`);
+    if ((b.personalEmail || '') !== (u.personalEmail || '')) auditLog(user.id, `Changed ${u.name}'s personal email`);
   });
   updateSettings(s => { s.workspace = { ...(s.workspace || {}), users: list }; });
   applyWorkspace();
@@ -357,15 +370,22 @@ function commitPeople(list, msg) {
 
 function savePeople(form) {
   const f = form.elements;
-  const list = USERS.map(u => ({ ...u, name: f['n_' + u.id].value.trim(), email: f['e_' + u.id].value.trim(), role: u.id === user.id ? u.role : f['r_' + u.id].value }));
+  const list = USERS.map(u => withPersonalEmail({ ...u, name: f['n_' + u.id].value.trim(), email: f['e_' + u.id].value.trim(), role: u.id === user.id ? u.role : f['r_' + u.id].value }, f['pe_' + u.id].value.trim()));
   const err = checkPeople(list);
   if (err) return setError('peopleError', err);
   commitPeople(list, 'People saved');
 }
 
+// Personal email is optional: store it only when given.
+function withPersonalEmail(u, pe) {
+  const out = { ...u };
+  if (pe) out.personalEmail = pe; else delete out.personalEmail;
+  return out;
+}
+
 function addPerson(form) {
   const f = form.elements;
-  const person = { id: newPersonId(), name: f.name.value.trim(), email: f.email.value.trim(), role: f.role.value };
+  const person = withPersonalEmail({ id: newPersonId(), name: f.name.value.trim(), email: f.email.value.trim(), role: f.role.value }, f.personalEmail.value.trim());
   const err = checkPeople([...USERS.map(u => ({ ...u })), person]);
   if (err) return setError('addError', err);
   if (f.password.value.length < 8) return setError('addError', 'Give them a temporary password of at least 8 characters.');
@@ -380,7 +400,7 @@ function resetPasswordDialog(id) {
     <form id="resetPwForm" class="dlg-form" data-id="${id}" novalidate>
       <div class="error" id="resetPwError"></div>
       <label class="full"><span>New temporary password</span><input name="password" type="text" maxlength="60" placeholder="At least 8 characters" autocomplete="off"></label>
-      <p class="sub full">Share it with ${esc(u.name.split(' ')[0])} privately. They can change it in My profile.</p>
+      <p class="sub full">Share it with ${esc(u.name.split(' ')[0])} privately${u.personalEmail ? `, for example at ${esc(u.personalEmail)}` : ''}. They can change it in My profile.</p>
       <div class="actions dlg-actions full"><span style="flex:1"></span><button type="button" class="btn" data-sch="close">Cancel</button>
         <button type="submit" class="btn btn-primary">Set password</button></div></form>`);
 }

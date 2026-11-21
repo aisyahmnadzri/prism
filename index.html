@@ -14,7 +14,7 @@
   <title>PRISM — Sign in</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=9">
+  <link rel="stylesheet" href="css/styles.css?v=10">
 </head>
 <body>
   <div class="login-wrap">
@@ -67,7 +67,8 @@
         <p class="sub">Create the <b>AI Team Lead</b> account. You'll add the rest of your team after this.</p>
         <div class="error" id="setupError"></div>
         <div class="field"><label for="sName">Your name</label><input id="sName" maxlength="60" autocomplete="name" placeholder="Full name"></div>
-        <div class="field"><label for="sEmail">Work email</label><input id="sEmail" type="email" maxlength="80" autocomplete="username" placeholder="name@company.com"></div>
+        <div class="field"><label for="sEmail">Work email <span class="opt">(you sign in with this)</span></label><input id="sEmail" type="email" maxlength="80" autocomplete="username" placeholder="name@company.com"></div>
+        <div class="field"><label for="sPEmail">Personal email <span class="opt">(optional)</span></label><input id="sPEmail" type="email" maxlength="80" autocomplete="email" placeholder="name@gmail.com"></div>
         <div class="field"><label for="sPw">Password</label><input id="sPw" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
         <div class="field"><label for="sPw2">Confirm password</label><input id="sPw2" type="password" autocomplete="new-password"></div>
         <button class="btn btn-primary" type="submit">Create Team Lead account</button>
@@ -99,9 +100,9 @@
     </section>
   </div>
 
-  <script src="js/pwa.js?v=9"></script>
-  <script src="js/data.js?v=9"></script>
-  <script src="js/auth.js?v=9"></script>
+  <script src="js/pwa.js?v=10"></script>
+  <script src="js/data.js?v=10"></script>
+  <script src="js/auth.js?v=10"></script>
   <script>
     if (currentUser()) window.location.href = startPageFor(currentUser());
 
@@ -116,10 +117,12 @@
       const name = document.getElementById('sName').value.trim(), email = document.getElementById('sEmail').value.trim();
       const pw = document.getElementById('sPw').value, pw2 = document.getElementById('sPw2').value;
       if (name.length < 2) return err('Enter your name.');
+      const pemail = document.getElementById('sPEmail').value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return err('Enter a valid work email.');
+      if (pemail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(pemail)) return err('Enter a valid personal email, or leave it empty.');
       if (pw.length < 8) return err('Use a password of at least 8 characters.');
       if (pw !== pw2) return err("The passwords don't match.");
-      const tl = createFirstTeamLead(name, email, pw);
+      const tl = createFirstTeamLead(name, email, pw, pemail);
       if (!tl) return location.reload();
       login(email, pw);
       window.location.href = 'dashboard.html';

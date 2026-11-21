@@ -231,10 +231,10 @@ const passwordFor = uid => ((loadSettings().passwords || {})[uid]) || (SAMPLE_US
 const newPersonId = () => 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
 
 // First run: the first person to open PRISM becomes the AI Team Lead.
-function createFirstTeamLead(name, email, password) {
+function createFirstTeamLead(name, email, password, personalEmail = '') {
   const s = loadSettings();
   if ((s.workspace && s.workspace.users && s.workspace.users.length)) return null;
-  const tl = { id: newPersonId(), name, email, role: 'TL' };
+  const tl = { id: newPersonId(), name, email, role: 'TL', ...(personalEmail ? { personalEmail } : {}) };
   s.workspace = { ...(s.workspace || {}), users: [tl] };
   s.passwords = { ...(s.passwords || {}), [tl.id]: password };
   saveSettings(s);

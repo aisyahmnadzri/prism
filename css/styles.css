@@ -1706,3 +1706,16 @@ mark { background: color-mix(in srgb, #fbbf24 45%, transparent); color: inherit;
 #people .notice .ic { width: 15px; height: 15px; vertical-align: -2px; color: var(--amber); }
 @media (max-width: 1180px) { .add-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 860px) { .add-grid { grid-template-columns: minmax(0, 1fr); } .set-table.people td.person-actions { grid-column: 3; grid-row: 1; } }
+
+/* ---------- Personal email ---------- */
+.login-card .field label .opt { font-weight: 500; color: var(--muted); font-size: 12px; }
+.add-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.add-grid > button { align-self: end; }
+.add-person label .sub { font-weight: 500; font-size: 11.5px; }
+@media (max-width: 1180px) { .add-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .add-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (min-width: 861px) {
+  .set-table.people input:not([type=checkbox]) { min-width: 170px; }
+  .set-table.people td[data-label="Name"] input { min-width: 140px; }
+  .set-table.people select { min-width: 150px; }
+}
