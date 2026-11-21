@@ -140,16 +140,16 @@ function workspaceSection() {
     return `<tr class="${edited ? 'edited' : ''}">
       <td><span class="pl-num">${s.id}</span></td>
       <td><b>${esc(s.name)}</b>${edited ? ' <span class="edit-dot" title="Changed from the default">edited</span>' : ''}<small>${s.deliverables.map(esc).join(' · ')}</small></td>
-      <td><input type="number" name="t${s.id}" value="${s.targetDays}" min="1" max="365" step="1" aria-label="Stage ${s.id} target days"></td>
-      <td><select name="a${s.id}" aria-label="Stage ${s.id} approver">${APPROVER_ROLES.map(r => `<option value="${r}" ${s.approver === r ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></td>
-      <td><input type="checkbox" class="switch" name="o${s.id}" ${s.skippable ? 'checked' : ''} aria-label="Stage ${s.id} optional"></td></tr>`;
+      <td data-label="Target days"><input type="number" name="t${s.id}" value="${s.targetDays}" min="1" max="365" step="1" aria-label="Stage ${s.id} target days"></td>
+      <td data-label="Approver"><select name="a${s.id}" aria-label="Stage ${s.id} approver">${APPROVER_ROLES.map(r => `<option value="${r}" ${s.approver === r ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></td>
+      <td data-label="Optional"><input type="checkbox" class="switch" name="o${s.id}" ${s.skippable ? 'checked' : ''} aria-label="Stage ${s.id} optional"></td></tr>`;
   }).join('');
   const peopleRows = USERS.map(u => `<tr>
       <td><span class="avatar mini role-${u.role}" data-u="${u.id}">${esc(initials(u.name))}</span></td>
-      <td><input name="n_${u.id}" value="${esc(u.name)}" maxlength="60" aria-label="Name"></td>
-      <td><input name="e_${u.id}" type="email" value="${esc(u.email)}" maxlength="80" aria-label="Email"></td>
-      <td><select name="r_${u.id}" aria-label="Role" ${u.id === user.id ? 'disabled title="You can\'t change your own role"' : ''}>${Object.keys(ROLES).map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></td>
-      <td class="assign">${assignmentText(u.id)}</td>
+      <td data-label="Name"><input name="n_${u.id}" value="${esc(u.name)}" maxlength="60" aria-label="Name"></td>
+      <td data-label="Email"><input name="e_${u.id}" type="email" value="${esc(u.email)}" maxlength="80" aria-label="Email"></td>
+      <td data-label="Role"><select name="r_${u.id}" aria-label="Role" ${u.id === user.id ? 'disabled title="You can\'t change your own role"' : ''}>${Object.keys(ROLES).map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${ROLES[r].label}</option>`).join('')}</select></td>
+      <td class="assign" data-label="Accounts">${assignmentText(u.id)}</td>
       <td>${u.id === user.id ? '<span class="badge b-pending">You</span>' : `<button type="button" class="icon-del" data-set="remove-user" data-id="${u.id}" title="Remove ${esc(u.name)}" aria-label="Remove ${esc(u.name)}">${icon('trash')}</button>`}</td></tr>`).join('');
   return `<div class="card set-card">${setHead('POC stages', 'Target days, approver and optional stages for every account')}
     <form id="stagesForm" novalidate>

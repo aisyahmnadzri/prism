@@ -64,6 +64,7 @@ const ICONS = {
   lock: '<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
   trash: '<path d="M3 6h18M8 6V4h8v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6M10 11v6M14 11v6"/>',
   gear: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/>',
+  dots: '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
   bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
   at: '<circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-4 8"/>',
   chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 13h5"/>',
@@ -315,7 +316,8 @@ function phaseFunnel(list, active) {
 // 4. Risk map: time used of stage target (x) vs progress (y)
 function riskMap(active) {
   if (!active.length) return panel('Risk map', '<p class="sub">No active accounts.</p>');
-  const W = 600, H = 270, L = 46, R = 18, T = 14, B = 40, pw = W - L - R, ph = H - T - B, maxX = 200;
+  const narrow = window.innerWidth < 640;
+  const W = narrow ? 360 : 600, H = narrow ? 300 : 270, L = narrow ? 38 : 46, R = narrow ? 10 : 18, T = 14, B = 40, pw = W - L - R, ph = H - T - B, maxX = 200;
   const x = v => L + (Math.min(v, maxX) / maxX) * pw;
   const y = v => T + (1 - v / 100) * ph;
   const grid = [0, 50, 100, 150, 200].map(v => `<line x1="${x(v)}" y1="${T}" x2="${x(v)}" y2="${T + ph}" class="grid"/>
@@ -328,12 +330,12 @@ function riskMap(active) {
   const dots = active.map(a => {
     const used = Math.round((daysIn(a) / stageOf(a).targetDays) * 100);
     const cx = x(used), cy = y(a.progress), stale = isStale(a);
-    const right = cx > W - 150;
+    const right = cx > W - (narrow ? 110 : 150);
     const tip = `${a.name} — ${a.status}, ${used}% of stage time used, ${a.progress}% progress${stale ? ', no update in 14 days' : ''}`;
     return `<a href="${accountLink(a)}" class="dot"><title>${esc(tip)}</title>
       ${stale ? `<circle cx="${cx}" cy="${cy}" r="12" class="stale-ring"/>` : ''}
       <circle cx="${cx}" cy="${cy}" r="7" style="fill:${STATUS_COLOR[a.status]}"/>
-      <text x="${right ? cx - 16 : cx + 16}" y="${cy + 4}" text-anchor="${right ? 'end' : 'start'}" class="dot-label">${esc(short(a.name))}</text></a>`;
+      <text x="${right ? cx - 16 : cx + 16}" y="${cy + 4}" text-anchor="${right ? 'end' : 'start'}" class="dot-label">${esc(short(a.name, narrow ? 13 : 18))}</text></a>`;
   }).join('');
   const svg = `<svg viewBox="0 0 ${W} ${H}" class="chart" role="img" aria-label="Risk map of accounts by time used and progress">
     ${zones}${grid}
@@ -636,14 +638,14 @@ function accountsPage(list) {
     const status = a.outcome ? `<span class="badge ${statusClass(a.outcome)}">${a.outcome}</span>` : `<span class="badge ${statusClass(a.status)}">${a.status}</span>`;
     const pend = a.pending && !a.outcome ? ` <span class="badge b-pending">Pending ${ROLES[s.approver].label}</span>` : '';
     return `<tr class="row-link" data-href="${accountLink(a)}">
-      <td><a href="${accountLink(a)}"><b>${esc(a.name)}</b></a><div class="sub">${a.id} · ${a.sector} sector</div></td>
-      <td>${esc(a.useCase)}</td>
-      <td>${s.id}. ${esc(s.name)}${pend}</td>
-      <td>${status}</td>
-      <td><span class="progress"><i style="width:${a.progress}%"></i></span>${a.progress}%</td>
-      <td>${a.outcome ? '—' : `${daysIn(a)} / ${s.targetDays}d${isOverdue(a) ? ' <span class="overdue">overdue</span>' : ''}`}</td>
-      <td>${esc(nameOf(a.am))}</td>
-      <td>${devs}</td>
+      <td class="c-name"><a href="${accountLink(a)}"><b>${esc(a.name)}</b></a><div class="sub">${a.id} · ${a.sector} sector</div></td>
+      <td class="c-use" data-label="Use case">${esc(a.useCase)}</td>
+      <td class="c-stage" data-label="Stage">${s.id}. ${esc(s.name)}${pend}</td>
+      <td class="c-status" data-label="Status">${status}</td>
+      <td data-label="Progress"><span class="progress"><i style="width:${a.progress}%"></i></span>${a.progress}%</td>
+      <td data-label="Days in stage">${a.outcome ? '—' : `${daysIn(a)} / ${s.targetDays}d${isOverdue(a) ? ' <span class="overdue">overdue</span>' : ''}`}</td>
+      <td data-label="Account Manager">${esc(nameOf(a.am))}</td>
+      <td data-label="Developers">${devs}</td>
     </tr>`;
   }).join('');
   const toolbar = canCreate ? `<div class="toolbar"><a class="btn btn-primary" href="account-form.html">${icon('plus')} New account</a></div>` : '';
@@ -866,7 +868,8 @@ function buildShell() {
       <a class="brand" href="${PAGES[navPages[0]].file}" style="text-decoration:none">${LOGO}
         <div><span class="brand-name">PRISM</span><small>AI Team · POC tracker</small></div></a>
       <div class="nav-label">Workspace</div>
-      <nav class="nav" id="nav"></nav>
+      <nav class="nav" id="nav" aria-label="Main"></nav>
+      <div class="nav-sheet" id="navSheet" hidden></div>
       <div class="sidebar-foot">
         <div class="me">
           <div class="avatar" data-u="${user.id}">${esc(initials(user.name))}</div>
@@ -944,13 +947,34 @@ function buildShell() {
   });
 }
 
+const MOBILE_ORDER = ['dashboard', 'approvals', 'messages', 'pipeline', 'schedule', 'accounts', 'settings'];
+function setSheet(open) {
+  const s = document.getElementById('navSheet'), b = document.querySelector('[data-nav="more"]');
+  if (!s) return;
+  s.hidden = !open;
+  if (b) b.setAttribute('aria-expanded', String(open));
+}
+document.addEventListener('click', e => {
+  if (e.target.closest('[data-nav="more"]')) { const s = document.getElementById('navSheet'); setSheet(s.hidden); return; }
+  if (!e.target.closest('#navSheet')) setSheet(false);
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') setSheet(false); });
+
 function renderNav() {
   const count = myApprovals().length;
   const active = page === 'account-form' ? 'accounts' : page === 'account' ? (user.role === 'HM' ? 'approvals' : 'accounts') : page;
-  document.getElementById('nav').innerHTML = navPages.map(k => {
-    const n = k === 'approvals' ? count : k === 'messages' ? totalUnread() : 0;
-    return `<a href="${PAGES[k].file}" class="${k === active ? 'active' : ''}">${icon(NAV_ICON[k])}${PAGES[k].label}${n ? `<span class="count">${n}</span>` : ''}</a>`;
-  }).join('');
+  const badge = k => k === 'approvals' ? count : k === 'messages' ? totalUnread() : 0;
+  // Phones show a bottom tab bar: the 4 most-used pages, the rest under "More".
+  const ranked = [...navPages].sort((a, b) => MOBILE_ORDER.indexOf(a) - MOBILE_ORDER.indexOf(b));
+  const extra = ranked.length <= 5 ? [] : ranked.slice(4);
+  const link = k => `<a href="${PAGES[k].file}" class="${k === active ? 'active' : ''} ${extra.includes(k) ? 'nav-extra' : ''}" style="--mo:${ranked.indexOf(k)}"
+      ${k === active ? 'aria-current="page"' : ''}>${icon(NAV_ICON[k])}<span class="nav-label-text">${PAGES[k].label}</span>${badge(k) ? `<span class="count">${badge(k)}</span>` : ''}</a>`;
+  const extraCount = extra.reduce((n, k) => n + badge(k), 0);
+  const more = extra.length ? `<button type="button" class="nav-more ${extra.includes(active) ? 'active' : ''}" data-nav="more" aria-expanded="false" aria-controls="navSheet" style="--mo:99">
+      ${icon('dots')}<span class="nav-label-text">More</span>${extraCount ? `<span class="count">${extraCount}</span>` : ''}</button>` : '';
+  document.getElementById('nav').innerHTML = navPages.map(link).join('') + more;
+  document.getElementById('navSheet').innerHTML = `<div class="sheet-grip"></div>${extra.map(k => `<a href="${PAGES[k].file}" class="${k === active ? 'active' : ''}">${icon(NAV_ICON[k])}<span>${PAGES[k].label}</span>${badge(k) ? `<span class="count">${badge(k)}</span>` : ''}</a>`).join('')}
+    <a href="notifications.html" class="${page === 'notifications' ? 'active' : ''}">${icon('bell')}<span>Notifications</span></a>`;
   renderBell();
 }
 
@@ -976,6 +1000,12 @@ function render() {
     'account-form': () => accountFormPage(),
   }[page]();
   renderNav();
+  // On narrow screens the lifecycle tracker scrolls sideways: bring the current stage into view.
+  const stepper = document.querySelector('.stepper'), current = stepper && stepper.querySelector('li.current');
+  if (current && stepper.scrollWidth > stepper.clientWidth) {
+    const offset = current.getBoundingClientRect().left - stepper.getBoundingClientRect().left;
+    stepper.scrollLeft += offset - stepper.clientWidth / 2 + current.offsetWidth / 2;
+  }
 }
 
 if (!redirecting) {
