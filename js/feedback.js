@@ -14,7 +14,7 @@ function seedFeedback() {
   return { items: [
     { id: 'F1', by: 'u2', at: at(6), type: 'idea', area: 'Reports', impact: 'important', status: 'planned', votes: ['u2', 'u1', 'u3', 'u6'],
       title: 'Monthly report emailed to management automatically', details: 'Send the POC status report as a PDF to Higher Management on the first working day of every month.' },
-    { id: 'F2', by: 'u4', at: at(4), type: 'improvement', area: 'Accounts', impact: 'nice', status: 'review', votes: ['u4', 'u5'],
+    { id: 'F2', by: 'u1', at: at(4), type: 'improvement', area: 'Accounts', impact: 'nice', status: 'review', votes: ['u1', 'u5'],
       title: 'Upload several documents at once', details: 'Stage 4 needs two documents; it would be quicker to drop both files together.' },
     { id: 'F3', by: 'u5', at: at(2), type: 'bug', area: 'Schedule', impact: 'important', status: 'new', votes: ['u5'],
       title: 'Timeline labels overlap for long agency names', details: 'On a small laptop screen the account name runs into the bars on the timeline view.' },
@@ -22,7 +22,7 @@ function seedFeedback() {
       title: 'Drag a POC card to request the next stage', details: 'Dragging a card to the next column could open the approval request with the checklist.' },
     { id: 'F5', by: 'u7', at: at(9), type: 'improvement', area: 'Notifications', impact: 'important', status: 'done', votes: ['u7', 'u2', 'u3', 'u1'],
       title: 'Remind approvers about waiting requests', details: 'Requests sometimes wait a week. A reminder after two days would help.' },
-    { id: 'F6', by: 'u8', at: at(3), type: 'idea', area: 'Tickets', impact: 'nice', status: 'review', votes: ['u8', 'u4', 'u5'],
+    { id: 'F6', by: 'u8', at: at(3), type: 'idea', area: 'Tickets', impact: 'nice', status: 'review', votes: ['u8', 'u1', 'u5'],
       title: 'Link a ticket to a GitHub issue', details: 'Developers track code work in GitHub. A link field on tickets would save switching.' },
     { id: 'F7', by: 'u6', at: at(5), type: 'idea', area: 'Dashboard', impact: 'important', status: 'planned', votes: ['u6', 'u1'],
       title: 'Show estimated value of converted POCs', details: 'Management would like to see the contract value next to each converted POC.' },

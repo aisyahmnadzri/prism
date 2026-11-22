@@ -18,7 +18,7 @@ function seedMessages() {
     defaultRead: minsAgo(360), // demo: everything older than 6 hours counts as read
     reads: {},
     groups: [
-      { id: 'G1', name: 'AI Team', members: ['u1', 'u4', 'u5', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12', 'u13', 'u14', 'u15'], by: 'u1', at: minsAgo(20000) },
+      { id: 'G1', name: 'AI Team', members: ['u1', 'u5', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12', 'u13', 'u14', 'u15'], by: 'u1', at: minsAgo(20000) },
       { id: 'G2', name: 'Account Managers & leads', members: ['u1', 'u2', 'u3', 'u6'], by: 'u1', at: minsAgo(20000) },
     ],
     threads: {
@@ -28,10 +28,10 @@ function seedMessages() {
         m('u2', 240, 'Still waiting for AWS. I will chase them again this week.'),
       ],
       'acc:ACC-003': [
-        m('u4', 5800, 'Finetuning results are in. Accuracy is below what IIM expects.'),
+        m('u1', 5800, 'Finetuning results are in. Accuracy is below what IIM expects.'),
         m('u7', 5700, 'I can try a different prompt set and more training samples.'),
-        m('u3', 300, '@Aisyah can we have the next iteration ready before the review?'),
-        m('u4', 120, 'Yes, Alia and Fiqry are on it. Review is booked for tomorrow.'),
+        m('u3', 300, '@Aisyah Nadzri can we have the next iteration ready before the review?'),
+        m('u1', 120, 'Yes, Alia and Fiqry are on it. Review is booked for tomorrow.'),
       ],
       'acc:ACC-004': [
         m('u2', 7300, 'Lunch & Learn went well. They want to explore a new use case.'),
@@ -57,13 +57,13 @@ function seedMessages() {
         m('u1', 90, 'Looks good, will review today.'),
       ],
       'acc:ACC-017': [
-        m('u5', 1440, 'Internal review notes uploaded. @Hafiz Rahman please review so we can schedule the immersion.'),
+        m('u5', 1440, 'Internal review notes uploaded. @Aisyah Nadzri please review so we can schedule the immersion.'),
         m('u15', 600, 'I can prepare the demo environment for the immersion.'),
       ],
       'acc:ACC-014': [m('u2', 60000, 'Still waiting for approval from Pengarah. Fact finding stays on hold for now.')],
       'acc:ACC-019': [
         m('u2', 4400, 'Use case brief and data assessment uploaded for KBS.'),
-        m('u4', 4300, 'Fact finding session booked for this week.'),
+        m('u1', 4300, 'Fact finding session booked for this week.'),
       ],
       'dm:u1:u2': [
         m('u1', 1450, 'Can you send me the MOF and MOT updates before the management sync?'),
@@ -74,11 +74,11 @@ function seedMessages() {
         m('u6', 2950, 'Can I get a summary of the Tier 1 accounts?'),
         m('u1', 2900, 'MOF, MOT and MITRA. MOT is waiting for the Go / No-Go, MOF is in tender, MITRA is in sectoral approval.'),
       ],
-      'dm:u3:u4': [m('u4', 170, 'Do we have a date for the IIM finetuning review with the agency?'), m('u3', 150, 'Not yet, after our internal review tomorrow.')],
+      'dm:u1:u3': [m('u1', 170, 'Do we have a date for the IIM finetuning review with the agency?'), m('u3', 150, 'Not yet, after our internal review tomorrow.')],
       'grp:G1': [
         m('u1', 1600, 'Please update progress for your accounts before Thursday.'),
         m('u5', 1500, 'Noted 👍'),
-        m('u4', 400, 'KBS and KPN fact finding sessions are this week.'),
+        m('u1', 400, 'KBS and KPN fact finding sessions are this week.'),
         m('u10', 55, 'KPKT development on track. Demo build ready next week.'),
       ],
       'grp:G2': [

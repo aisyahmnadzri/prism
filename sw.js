@@ -1,7 +1,7 @@
 // PRISM service worker: keeps the app shell available so PRISM opens fast and works with a weak or no signal.
 // Strategy: network first (so updates show up straight away), falling back to the saved copy when offline.
 // Bump VERSION whenever the list of files changes.
-const VERSION = 'prism-v12';
+const VERSION = 'prism-v13';
 const SHELL = [
   './', 'index.html', 'offline.html',
   'dashboard.html', 'pipeline.html', 'schedule.html', 'approvals.html', 'messages.html', 'notifications.html',

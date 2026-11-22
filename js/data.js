@@ -25,10 +25,9 @@ const STAGES = [
 // Sample people exist only while sample data is loaded (Settings › Workspace › Workspace data).
 const DEMO_PASSWORD = 'prism123';
 const SAMPLE_USERS = [
-  { id: 'u1', name: 'Hafiz Rahman', email: 'lead@prism.local', personalEmail: 'hafiz.rahman@example.com', role: 'TL', sample: true },
+  { id: 'u1', name: 'Aisyah Nadzri', email: 'aisyah@prism.local', personalEmail: 'aisyah.nadzri@example.com', role: 'TL', sample: true },
   { id: 'u2', name: 'Kira', email: 'kira@prism.local', personalEmail: 'kira@example.com', role: 'AM', sample: true },
   { id: 'u3', name: 'Mala', email: 'mala@prism.local', personalEmail: 'mala@example.com', role: 'AM', sample: true },
-  { id: 'u4', name: 'Aisyah', email: 'aisyah@prism.local', personalEmail: 'aisyah@example.com', role: 'DEV', sample: true },
   { id: 'u5', name: 'Raimi', email: 'raimi@prism.local', personalEmail: 'raimi@example.com', role: 'DEV', sample: true },
   { id: 'u7', name: 'Alia', email: 'alia@prism.local', personalEmail: 'alia@example.com', role: 'DEV', sample: true },
   { id: 'u8', name: 'Fiqry', email: 'fiqry@prism.local', personalEmail: 'fiqry@example.com', role: 'DEV', sample: true },
@@ -60,7 +59,7 @@ function seedAccounts() {
   // From the AI Team's Account Allocation & POC Lifecycle Tracker (Nov 2026), mapped onto PRISM's 10 stages.
   // Team order in devs = Primary, Secondary, Tertiary.
   const on = (ds, h = 10) => { const d = parseYmd(ds); d.setHours(h, 0, 0, 0); return d.toISOString(); };
-  const K = 'u2', M = 'u3', Ai = 'u4', Ra = 'u5', Al = 'u7', Fi = 'u8', Ri = 'u9', Lu = 'u10', Fa = 'u11', Wa = 'u12', Ha = 'u13', Hi = 'u14', Am = 'u15';
+  const K = 'u2', M = 'u3', Ai = 'u1', Ra = 'u5', Al = 'u7', Fi = 'u8', Ri = 'u9', Lu = 'u10', Fa = 'u11', Wa = 'u12', Ha = 'u13', Hi = 'u14', Am = 'u15';
   const TBC = 'Use case to be confirmed';
   // Lifecycle columns from the tracker, shown on each account as they appear in the spreadsheet
   const T = (o) => Object.entries({ 'POC agreement': o.ag, 'Fact finding': o.ff, 'Requirement mapping': o.rm, 'Workflow presentation': o.wp,

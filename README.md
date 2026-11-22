@@ -10,7 +10,7 @@
 2. In **Settings › Workspace › People and roles**, add your team with a role and a temporary password each. Share it with them privately; they can change it in My profile. The Team Lead can set a new password for anyone who forgets theirs.
 3. Add the first account from **Accounts**.
 
-Want to look around first? On a brand-new browser, click **Explore the demo workspace** on the setup screen: PRISM fills itself with sample data and signs you in as the sample Team Lead. The sign-in page then lists the sample people so you can switch roles. Already set up? **Settings › Workspace › Load sample data** adds the AI Team's 23 tracked accounts and 15 people (password `prism123`). **Erase all data** removes them again; your real team is never touched.
+Want to look around first? On a brand-new browser, click **Explore the demo workspace** on the setup screen: PRISM fills itself with sample data and signs you in as the sample Team Lead. The sign-in page then lists the sample people so you can switch roles. Already set up? **Settings › Workspace › Load sample data** adds the AI Team's 23 tracked accounts and 14 people, with Aisyah Nadzri as the AI Team Lead (password `prism123`). **Erase all data** removes them again; your real team is never touched.
 
 | Role | Can do |
 |---|---|

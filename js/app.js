@@ -814,7 +814,7 @@ function accountFormPage() {
   }
   if (!ok) return `<div class="empty">${mode === 'new' ? 'Only the AI Team Lead can create accounts.' : "Account not found, or you can't edit it."}</div>`;
   const v = a || { name: '', code: '', tier: '', pocReady: null, cfaRemarks: '', sector: 'Public', useCase: '', description: '', contact: '', am: '', devs: [] };
-  const devOpts = cur => opt('', '—', cur || '') + USERS.filter(u => u.role === 'DEV').map(u => opt(u.id, u.name, cur)).join('');
+  const devOpts = cur => opt('', '—', cur || '') + USERS.filter(u => u.role === 'DEV' || u.role === 'TL').map(u => opt(u.id, u.name, cur)).join('');
   const lock = user.role !== 'TL';
   const opt = (val, label, cur) => `<option value="${esc(val)}" ${val === cur ? 'selected' : ''}>${esc(label)}</option>`;
   const cancel = a ? accountLink(a) : 'accounts.html';
