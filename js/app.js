@@ -1,4 +1,5 @@
 // PRISM — app shell + pages (role-based). Each HTML page sets <body data-page="...">.
+if (new URLSearchParams(location.search).has('demo')) { startDemoWorkspace(); history.replaceState(null, '', location.pathname); }
 const user = requireAuth();
 let accounts = loadAccounts();
 

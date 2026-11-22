@@ -20,6 +20,12 @@ function seedFeedback() {
       title: 'Timeline labels overlap for long agency names', details: 'On a small laptop screen the account name runs into the bars on the timeline view.' },
     { id: 'F4', by: 'u3', at: at(1), type: 'idea', area: 'Pipeline', impact: 'nice', status: 'new', votes: ['u3', 'u2'],
       title: 'Drag a POC card to request the next stage', details: 'Dragging a card to the next column could open the approval request with the checklist.' },
+    { id: 'F5', by: 'u7', at: at(9), type: 'improvement', area: 'Notifications', impact: 'important', status: 'done', votes: ['u7', 'u2', 'u3', 'u1'],
+      title: 'Remind approvers about waiting requests', details: 'Requests sometimes wait a week. A reminder after two days would help.' },
+    { id: 'F6', by: 'u8', at: at(3), type: 'idea', area: 'Tickets', impact: 'nice', status: 'review', votes: ['u8', 'u4', 'u5'],
+      title: 'Link a ticket to a GitHub issue', details: 'Developers track code work in GitHub. A link field on tickets would save switching.' },
+    { id: 'F7', by: 'u6', at: at(5), type: 'idea', area: 'Dashboard', impact: 'important', status: 'planned', votes: ['u6', 'u1'],
+      title: 'Show estimated value of converted POCs', details: 'Management would like to see the contract value next to each converted POC.' },
   ] };
 }
 function loadFb() { try { const s = JSON.parse(localStorage.getItem(FB_KEY)); if (s) return s; } catch (e) { /* ignore */ } const s = { items: [] }; saveFb(s); return s; }

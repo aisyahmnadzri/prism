@@ -17,7 +17,8 @@ function seedMessages() {
   return {
     defaultRead: minsAgo(360), // demo: everything older than 6 hours counts as read
     reads: {},
-    groups: [{ id: 'G1', name: 'Health & Immigration squad', members: ['u2', 'u4', 'u5'], by: 'u2', at: minsAgo(4000) }],
+    groups: [{ id: 'G1', name: 'Health & Immigration squad', members: ['u2', 'u4', 'u5'], by: 'u2', at: minsAgo(4000) },
+      { id: 'G2', name: 'AI Team leads', members: ['u1', 'u2', 'u3', 'u7', 'u6'], by: 'u1', at: minsAgo(9000) }],
     threads: {
       'acc:ACC-001': [
         m('u2', 2900, 'Agency IT confirmed the second batch of notes is ready. @Kavitha Raj can you pick it up on Monday?'),
@@ -40,6 +41,26 @@ function seedMessages() {
         m('u6', 30, "Thanks. I'll decide after Friday's meeting. @Daniel Lim please share the cost estimate."),
       ],
       'acc:ACC-008': [m('u4', 60, 'Internal review notes uploaded. Ready for the client demo next week.')],
+      'acc:ACC-012': [
+        m('u8', 2000, 'Worn cards are causing most of the false alarms.'),
+        m('u2', 1900, "I'll ask the agency for more worn-card samples."),
+        m('u1', 95, "@Nurul Aina let's flag this as At Risk until the samples arrive."),
+        m('u8', 25, 'Retrained with augmentation: false alarms down from 14% to 9%.'),
+      ],
+      'acc:ACC-013': [
+        m('u7', 1500, 'Completion letter signed by the agency 🎉'),
+        m('u5', 80, 'Uploaded and requested the move to Go / No-Go. @Farah Hanim please approve.'),
+      ],
+      'acc:ACC-015': [
+        m('u6', 17300, 'Converted. Well done everyone, the ministry wants a national rollout plan.'),
+        m('u7', 17200, "Thank you! I'll set up the rollout planning meeting."),
+      ],
+      'acc:ACC-014': [m('u3', 300, 'First private-sector POC. They have three years of gate photos we can use.')],
+      'dm:u1:u7': [
+        m('u7', 400, 'Fire and Rescue wants the transcription demo in Malay and English.'),
+        m('u1', 380, 'Good. Jason can show both. Put it in the schedule.'),
+      ],
+      'dm:u7:u8': [m('u8', 70, 'Can you chase the data sharing agreement for Fire and Rescue?'), m('u7', 50, 'On it, their legal team replies tomorrow.')],
       'dm:u1:u2': [
         m('u1', 1450, 'Can you send me the MOH update before the leadership sync?'),
         m('u2', 1380, "Sure, I'll post it in PRISM by end of day."),
@@ -54,6 +75,12 @@ function seedMessages() {
         m('u2', 360 + 30, 'Stand-up moved to 9:30 tomorrow.'),
         m('u5', 300, 'Noted 👍'),
         m('u4', 55, "I'll demo the summariser improvements."),
+      ],
+      'grp:G2': [
+        m('u1', 1600, 'Reminder: monthly POC review on Thursday. Please update your accounts before then.'),
+        m('u6', 1500, 'I would like to see the conversion rate and anything At Risk.'),
+        m('u3', 200, 'Meteorological is delayed by the floods. Updated in PRISM.'),
+        m('u7', 45, 'Social Security is ready for Go / No-Go next week.'),
       ],
     },
   };

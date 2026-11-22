@@ -109,13 +109,28 @@ function dataCard() {
   const counts = [['Accounts', accounts.length], ['Tickets', loadTickets().items.length], ['Messages', msgCount], ['Feedback', loadFb().items.length]];
   return `<div class="card set-card">${setHead('Workspace data', 'Everything people have entered in this workspace')}
     <div class="data-counts">${counts.map(([l, n]) => `<div><b>${n}</b><span>${l}</span></div>`).join('')}</div>
-    <p class="sub set-note">${icon('alert')} Prototype: data is saved in this browser only. Sample data adds six sample people (password <code>${DEMO_PASSWORD}</code>); erasing removes them again. Your real team is never affected.</p>
+    <p class="sub set-note">${icon('alert')} Prototype: data is saved in this browser only. Sample data adds ${SAMPLE_USERS.length} sample people (password <code>${DEMO_PASSWORD}</code>); erasing removes them again. Your real team is never affected.</p>
     <div class="actions">
       <button type="button" class="btn" data-set="load-sample">${icon('download')} Load sample data</button>
       <span style="flex:1"></span>
       <button type="button" class="btn btn-danger" data-set="erase-all">${icon('trash')} Erase all data</button>
     </div></div>`;
 }
+// Open the demo workspace (from the first-run screen): sample people and data, signed in as the sample Team Lead.
+// Only when nobody real has set up PRISM in this browser, so real data is never replaced.
+function startDemoWorkspace() {
+  if (USERS.some(u => !u.sample)) return;
+  const s = loadSettings();
+  s.workspace = { ...(s.workspace || {}), users: SAMPLE_USERS.map(x => ({ ...x })) };
+  saveSettings(s);
+  applyWorkspace();
+  saveAccounts(seedAccounts());
+  saveMsgs(seedMessages()); reloadMsgs();
+  saveTickets(seedTickets());
+  saveFb(seedFeedback());
+  try { localStorage.removeItem(NOTIF_KEY); localStorage.removeItem(AUDIT_KEY); sessionStore().setItem(SESSION_KEY, 'u1'); } catch (e) { /* ignore */ }
+}
+
 function replaceWorkspaceData(sample) {
   // Sample people come and go with the sample data; real people are never touched.
   updateSettings(s => {
@@ -132,15 +147,21 @@ function replaceWorkspaceData(sample) {
   notifUI.seen = null;
 }
 function loadSampleData() {
-  if (!confirm('Replace everything in this workspace with sample data? Any accounts, tickets, messages and feedback you entered will be removed. Six sample people are added; your real team stays.')) return;
+  if (!confirm(`Replace everything in this workspace with sample data? Any accounts, tickets, messages and feedback you entered will be removed. ${SAMPLE_USERS.length} sample people are added; your real team stays.`)) return;
   replaceWorkspaceData(true);
   auditLog(user.id, 'Loaded sample data');
   toast('Sample data loaded');
   render();
 }
 function eraseAllData() {
-  if (!confirm('Erase all accounts, tickets, messages, feedback, notifications and audit history in this workspace, and remove the sample people? Your real team stays. This cannot be undone.')) return;
+  const demoOnly = USERS.every(u => u.sample);
+  if (!confirm(demoOnly ? 'Close the demo workspace? All sample data and sample people are removed and PRISM goes back to first-time setup.'
+    : 'Erase all accounts, tickets, messages, feedback, notifications and audit history in this workspace, and remove the sample people? Your real team stays. This cannot be undone.')) return;
   replaceWorkspaceData(false);
+  if (demoOnly) { // nothing real was ever set up here: back to a brand-new PRISM
+    updateSettings(s => { s.workspace = { ...(s.workspace || {}), users: [] }; s.passwords = {}; });
+    return logout();
+  }
   auditLog(user.id, 'Erased all workspace data');
   toast('Workspace erased. It is now empty');
   render();

@@ -14,7 +14,7 @@
   <title>PRISM — Sign in</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css?v=10">
+  <link rel="stylesheet" href="css/styles.css?v=11">
 </head>
 <body>
   <div class="login-wrap">
@@ -72,7 +72,9 @@
         <div class="field"><label for="sPw">Password</label><input id="sPw" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
         <div class="field"><label for="sPw2">Confirm password</label><input id="sPw2" type="password" autocomplete="new-password"></div>
         <button class="btn btn-primary" type="submit">Create Team Lead account</button>
-        <p class="sub login-note">Prototype: accounts and data are stored in this browser only.</p>
+        <div class="or-line"><span>or</span></div>
+        <a class="btn demo-btn" href="dashboard.html?demo=1">Explore the demo workspace</a>
+        <p class="sub login-note">The demo is filled with sample accounts and people. Prototype: everything is stored in this browser only.</p>
       </form>
 
       <form class="login-card" id="loginForm" novalidate hidden>
@@ -96,13 +98,17 @@
         <button class="btn btn-primary" type="submit">Sign in</button>
         <button class="btn install-link login-install" type="button" data-pwa-install>Install the PRISM app</button>
         <p class="sub login-note">Forgot your password? Ask your AI Team Lead to set a new one.</p>
+        <div class="demo-people" id="demoPeople" hidden>
+          <p><b>Demo workspace</b> · sign in as a sample person</p>
+          <div id="demoChips"></div>
+        </div>
       </form>
     </section>
   </div>
 
-  <script src="js/pwa.js?v=10"></script>
-  <script src="js/data.js?v=10"></script>
-  <script src="js/auth.js?v=10"></script>
+  <script src="js/pwa.js?v=11"></script>
+  <script src="js/data.js?v=11"></script>
+  <script src="js/auth.js?v=11"></script>
   <script>
     if (currentUser()) window.location.href = startPageFor(currentUser());
 
@@ -127,6 +133,19 @@
       login(email, pw);
       window.location.href = 'dashboard.html';
     });
+
+    // Sample people are listed only while sample data is loaded, so the demo is easy to show from every role.
+    const samples = USERS.filter(u => u.sample);
+    if (samples.length) {
+      document.getElementById('demoPeople').hidden = false;
+      document.getElementById('demoChips').innerHTML = samples.map(u =>
+        `<button type="button" class="demo-chip" data-email="${u.email}"><b>${u.name}</b><span>${ROLES[u.role].label}</span></button>`).join('');
+      document.getElementById('demoChips').addEventListener('click', e => {
+        const b = e.target.closest('[data-email]'); if (!b) return;
+        const u = login(b.dataset.email, DEMO_PASSWORD);
+        if (u) window.location.href = startPageFor(u);
+      });
+    }
 
     const errBox = document.getElementById('error');
     form.addEventListener('submit', e => {

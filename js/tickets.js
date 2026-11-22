@@ -25,7 +25,7 @@ function seedTickets() {
     const created = o.created ?? 10;
     const t = { id, type: 'Task', priority: 'medium', status: 'open', account: null, description: '', pendingReason: '', resolution: '', comments: [], ...o,
       createdAt: D(created), updatedAt: D(o.updated ?? Math.min(created, 1)), due: o.due === undefined ? null : due(o.due) };
-    t.history = [{ by: t.reporter, at: t.createdAt, text: `Created and assigned to ${nameOf(t.assignee)}`, kind: 'created' }];
+    t.history = [{ by: t.reporter, at: t.createdAt, text: `Created and assigned to ${(userById(t.assignee) || { name: "—" }).name}`, kind: 'created' }];
     if (t.status !== 'open') t.history.unshift({ by: t.assignee, at: D(Math.max(created - 1, 0.5)), text: 'Started work', kind: 'status' });
     if (t.status === 'pending') t.history.unshift({ by: t.assignee, at: t.updatedAt, text: `Marked pending: ${t.pendingReason}`, kind: 'status' });
     if (isDone(t)) { t.resolvedAt = D(o.resolvedDaysAgo ?? 2); t.history.unshift({ by: t.assignee, at: t.resolvedAt, text: `Resolved${t.resolution ? `: ${t.resolution}` : ''}`, kind: 'status' }); }
@@ -65,6 +65,22 @@ function seedTickets() {
     T({ title: 'Tax enquiry triage: retrain with new categories', account: 'ACC-006', assignee: 'u4', reporter: 'u3', status: 'closed', created: 35, resolvedDaysAgo: 27 }),
     T({ title: 'Benchmark summariser latency', account: 'ACC-001', assignee: 'u5', reporter: 'u4', priority: 'low', status: 'closed', created: 40, resolvedDaysAgo: 34 }),
     T({ title: 'City hall demo room booking', account: 'ACC-008', type: 'Request', assignee: 'u3', reporter: 'u4', priority: 'low', status: 'open', created: 1, due: 6 }),
+    T({ title: 'Reduce false alarms on worn identity cards', account: 'ACC-012', type: 'Bug', assignee: 'u8', reporter: 'u2', priority: 'urgent', status: 'progress', created: 5, due: 2,
+      description: 'False-alarm rate must be under 5% for the agency to accept.', comments: [['u8', 1, 'Down to 9% with augmentation. Trying a second model.']] }),
+    T({ title: 'Request 1,000 worn-card samples from agency', account: 'ACC-012', type: 'Request', assignee: 'u2', reporter: 'u8', priority: 'high', status: 'pending', created: 6, due: 1,
+      pendingReason: 'Waiting on agency', updated: 2 }),
+    T({ title: 'Label tampered card samples', account: 'ACC-012', assignee: 'u4', reporter: 'u8', status: 'progress', created: 4, due: 5 }),
+    T({ title: 'Chase data sharing agreement', account: 'ACC-011', type: 'Request', assignee: 'u7', reporter: 'u8', priority: 'high', status: 'progress', created: 3, due: 1 }),
+    T({ title: 'Malay + English transcription demo', account: 'ACC-011', assignee: 'u8', reporter: 'u7', status: 'open', created: 2, due: 8 }),
+    T({ title: 'Go / No-Go memo for Social Security', account: 'ACC-013', type: 'Documentation', assignee: 'u7', reporter: 'u1', priority: 'high', status: 'open', created: 1, due: 6 }),
+    T({ title: 'Extraction accuracy report by form type', account: 'ACC-013', type: 'Documentation', assignee: 'u5', reporter: 'u7', status: 'resolved', created: 9, resolvedDaysAgo: 3,
+      resolution: 'Report shared: 96% average, lowest 91% on handwritten forms.' }),
+    T({ title: 'Collect sample gate photos from Harbour Logistics', account: 'ACC-014', type: 'Request', assignee: 'u3', reporter: 'u8', status: 'open', created: 2, due: 7 }),
+    T({ title: 'Rollout plan for crop disease app', account: 'ACC-015', type: 'Documentation', assignee: 'u7', reporter: 'u6', priority: 'medium', status: 'progress', created: 10, due: 12 }),
+    T({ title: 'Reschedule demo with Meteorological', account: 'ACC-016', assignee: 'u3', reporter: 'u1', priority: 'high', status: 'pending', created: 7, due: -3,
+      pendingReason: 'Waiting on agency', updated: 4 }),
+    T({ title: 'East Coast station test results', account: 'ACC-016', assignee: 'u4', reporter: 'u1', status: 'closed', created: 30, resolvedDaysAgo: 26 }),
+    T({ title: 'Discovery questions for sports science unit', account: 'ACC-017', type: 'Documentation', assignee: 'u2', reporter: 'u2', priority: 'low', status: 'open', created: 1, due: 9 }),
   ] };
 }
 function loadTickets() { try { const s = JSON.parse(localStorage.getItem(TK_KEY)); if (s) return s; } catch (e) { /* ignore */ } const s = { items: [] }; saveTickets(s); return s; }

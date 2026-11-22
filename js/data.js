@@ -25,12 +25,14 @@ const STAGES = [
 // Sample people exist only while sample data is loaded (Settings › Workspace › Workspace data).
 const DEMO_PASSWORD = 'prism123';
 const SAMPLE_USERS = [
-  { id: 'u1', name: 'Hafiz Rahman', email: 'lead@prism.local', role: 'TL', sample: true },
-  { id: 'u2', name: 'Nurul Aina', email: 'aina@prism.local', role: 'AM', sample: true },
-  { id: 'u3', name: 'Daniel Lim', email: 'daniel@prism.local', role: 'AM', sample: true },
-  { id: 'u4', name: 'Kavitha Raj', email: 'kavitha@prism.local', role: 'DEV', sample: true },
-  { id: 'u5', name: 'Amir Zulkifli', email: 'amir@prism.local', role: 'DEV', sample: true },
-  { id: 'u6', name: 'Rosnah Ismail', email: 'mgmt@prism.local', role: 'HM', sample: true },
+  { id: 'u1', name: 'Hafiz Rahman', email: 'lead@prism.local', personalEmail: 'hafiz.rahman@example.com', role: 'TL', sample: true },
+  { id: 'u2', name: 'Nurul Aina', email: 'aina@prism.local', personalEmail: 'nurul.aina@example.com', role: 'AM', sample: true },
+  { id: 'u3', name: 'Daniel Lim', email: 'daniel@prism.local', personalEmail: 'daniel.lim@example.com', role: 'AM', sample: true },
+  { id: 'u7', name: 'Farah Hanim', email: 'farah@prism.local', personalEmail: 'farah.hanim@example.com', role: 'AM', sample: true },
+  { id: 'u4', name: 'Kavitha Raj', email: 'kavitha@prism.local', personalEmail: 'kavitha.raj@example.com', role: 'DEV', sample: true },
+  { id: 'u5', name: 'Amir Zulkifli', email: 'amir@prism.local', personalEmail: 'amir.z@example.com', role: 'DEV', sample: true },
+  { id: 'u8', name: 'Jason Tan', email: 'jason@prism.local', personalEmail: 'jason.tan@example.com', role: 'DEV', sample: true },
+  { id: 'u6', name: 'Rosnah Ismail', email: 'mgmt@prism.local', personalEmail: 'rosnah.ismail@example.com', role: 'HM', sample: true },
 ];
 // The real team, created in the app (first-run setup, then Settings › People and roles)
 const USERS = [];
@@ -90,7 +92,55 @@ function seedAccounts() {
     acct({ id: 'ACC-010', name: 'State Tourism Board', useCase: 'Visitor itinerary recommender', am: 'u3', devs: ['u4'], stage: 10, status: 'On Track', progress: 100, stageSince: daysAgo(45),
       evidence: ['Decision_Memo_STB.pdf'], outcome: 'Closed', archived: { at: daysAgo(30), by: 'u1' },
       history: [{ by: 'u1', at: daysAgo(30), text: 'Archived the account' }, { by: 'u6', at: daysAgo(45), text: 'Decision: POC closed' }] }),
+    acct({ id: 'ACC-011', name: 'Fire and Rescue Department', useCase: 'Emergency call transcription', am: 'u7', devs: ['u8'], stage: 4, status: 'On Track', progress: 30, stageSince: daysAgo(8),
+      evidence: ['Signed_LOI_Fire_Rescue.pdf', null],
+      updates: [{ by: 'u7', at: daysAgo(2), status: 'On Track', progress: 30, note: 'Letter of intent signed. Data sharing agreement is with their legal team.', blockers: '' }],
+      history: [{ by: 'u7', at: daysAgo(2), text: 'Posted a progress update (30%)' }] }),
+    acct({ id: 'ACC-012', name: 'National Registration Department', useCase: 'Identity document fraud detection', am: 'u2', devs: ['u8', 'u4'], stage: 6, status: 'At Risk', progress: 48, stageSince: daysAgo(34),
+      evidence: [null],
+      updates: [
+        { by: 'u8', at: daysAgo(1), status: 'At Risk', progress: 48, note: 'Detector catches 91% of tampered samples but false alarms are still high on worn cards.', blockers: 'Need 1,000 more genuine worn-card samples from the agency.' },
+        { by: 'u2', at: daysAgo(12), status: 'On Track', progress: 30, note: 'Agency shared the first 5,000 labelled samples.', blockers: '' },
+      ],
+      history: [{ by: 'u8', at: daysAgo(1), text: 'Posted a progress update (48%)' }] }),
+    acct({ id: 'ACC-013', name: 'Social Security Organisation', useCase: 'Claims form data extraction', am: 'u7', devs: ['u5'], stage: 9, status: 'On Track', progress: 95, stageSince: daysAgo(6),
+      evidence: ['POC_Completion_Letter_SSO.pdf'], pending: { by: 'u5', at: daysAgo(1) },
+      updates: [{ by: 'u7', at: daysAgo(3), status: 'On Track', progress: 95, note: 'Agency signed the completion letter. Extraction accuracy 96% across 12 form types.', blockers: '' }],
+      history: [{ by: 'u5', at: daysAgo(1), text: 'Requested approval to move to Go / No-Go Decision' }] }),
+    acct({ id: 'ACC-014', name: 'Harbour Logistics Sdn Bhd', sector: 'Private', useCase: 'Container damage inspection from photos', am: 'u3', devs: ['u8'], stage: 2, status: 'On Track', progress: 12, stageSince: daysAgo(7),
+      evidence: ['Use_Case_Brief_Harbour.docx', null],
+      updates: [{ by: 'u3', at: daysAgo(4), status: 'On Track', progress: 12, note: 'First private-sector POC. Site visit done; they have 3 years of inspection photos.', blockers: '' }] }),
+    acct({ id: 'ACC-015', name: 'Ministry of Agriculture', useCase: 'Crop disease detection from leaf photos', am: 'u7', devs: ['u5', 'u8'], stage: 10, status: 'On Track', progress: 100, stageSince: daysAgo(26),
+      evidence: ['Decision_Memo_MOA.pdf'], outcome: 'Converted',
+      history: [{ by: 'u6', at: daysAgo(12), text: 'Decision: POC converted' }] }),
+    acct({ id: 'ACC-016', name: 'Meteorological Department', useCase: 'Flood warning summariser', am: 'u3', devs: ['u4'], stage: 8, status: 'Delayed', progress: 72, stageSince: daysAgo(24),
+      evidence: [null],
+      updates: [{ by: 'u3', at: daysAgo(5), status: 'Delayed', progress: 72, note: 'Client demo moved twice because of the monsoon response.', blockers: 'Agency team busy with flood operations until next month.' }],
+      history: [{ by: 'u1', at: daysAgo(31), text: 'Returned for rework: Internal Review' }] }),
+    acct({ id: 'ACC-017', name: 'Ministry of Youth and Sports', useCase: 'Athlete performance insights', am: 'u2', devs: [], stage: 1, status: 'On Track', progress: 3, stageSince: daysAgo(2),
+      evidence: ['Problem_Statement_KBS.pdf', null],
+      history: [{ by: 'u2', at: daysAgo(2), text: 'Created the account' }] }),
   ];
+  const about = {
+    'ACC-001': ['Doctors spend up to two hours a day writing discharge summaries. Summarise clinical notes into a draft for review.', 'Head of Digital Health, MOH IT Division'],
+    'ACC-002': ['Detect potholes and cracks from survey vehicle footage to prioritise road repairs.', 'Senior Engineer, Road Maintenance Unit'],
+    'ACC-003': ['Check visa application documents automatically and flag mismatches for officers.', 'Deputy Director, Visa Division'],
+    'ACC-004': ['Help teachers draft lesson plans aligned to the national curriculum.', 'Curriculum Development Division'],
+    'ACC-005': ['Answer public questions about land title searches without a counter visit.', 'Customer Service Unit'],
+    'ACC-006': ['Route tax enquiries to the right team and draft first replies.', 'Head of Contact Centre'],
+    'ACC-007': ['Automate cleaning of household survey returns before analysis.', 'Data Processing Division'],
+    'ACC-008': ['Classify citizen complaints and send them to the right department.', 'Smart City Unit'],
+    'ACC-009': ['Handle licence renewal questions on the web and messaging apps.', 'Licensing Division'],
+    'ACC-010': ['Recommend visitor itineraries from interests and travel dates.', 'Digital Marketing Unit'],
+    'ACC-011': ['Transcribe emergency calls live so dispatchers can see key details.', 'Operations Centre'],
+    'ACC-012': ['Spot tampered identity cards at registration counters.', 'Document Security Unit'],
+    'ACC-013': ['Pull fields out of scanned claim forms to cut manual data entry.', 'Claims Processing Division'],
+    'ACC-014': ['Find container damage in gate photos before cargo is accepted.', 'Head of Port Operations'],
+    'ACC-015': ['Farmers photograph a leaf and get the likely disease and treatment.', 'Crop Protection Division'],
+    'ACC-016': ['Turn flood forecasts into short plain-language warnings.', 'Forecasting Division'],
+    'ACC-017': ['Give coaches insights from training and competition data.', 'Sports Science Unit'],
+  };
+  list.forEach(a => { if (about[a.id]) { a.description = about[a.id][0]; a.contact = about[a.id][1]; } });
   seedSchedule(list);
   seedApprovals(list);
   return list;
@@ -121,7 +171,7 @@ function autoPlan(currentStage, currentStart) {
 }
 
 // Demo schedule: some POCs started their current stage later than planned (slip, in days).
-const PLAN_SLIP = { 'ACC-001': 6, 'ACC-003': 4, 'ACC-004': 10, 'ACC-006': 2, 'ACC-007': 5 };
+const PLAN_SLIP = { 'ACC-001': 6, 'ACC-003': 4, 'ACC-004': 10, 'ACC-006': 2, 'ACC-007': 5, 'ACC-012': 7, 'ACC-016': 9 };
 function seedSchedule(list) {
   list.forEach(a => { a.plan = autoPlan(a.stage, addDays(new Date(a.stageSince), -(PLAN_SLIP[a.id] || 0))); });
   let n = 0;
@@ -142,6 +192,14 @@ function seedSchedule(list) {
   ev('ACC-001', 9, 'Model accuracy review', 'Internal review', '14:30', '15:30', 'AI Team room');
   ev('ACC-002', 12, 'Site visit: road survey footage', 'Site visit', '08:30', '12:30', 'Federal Route 2');
   ev('ACC-003', 15, 'Evaluation results walkthrough', 'Client demo', '10:00', '11:00', 'Immigration HQ');
+  ev('ACC-012', -2, 'Fraud sample review with agency', 'Workshop', '10:00', '12:00', 'Registration HQ');
+  ev('ACC-013', 0, 'Completion letter handover', 'Meeting', '11:00', '11:30', 'Online');
+  ev('ACC-011', 1, 'Data sharing agreement review', 'Meeting', '14:00', '15:00', 'Legal Division');
+  ev('ACC-014', 2, 'Port gate site visit', 'Site visit', '09:00', '12:00', 'North Port');
+  ev('ACC-016', 4, 'Rescheduled client demo', 'Client demo', '10:00', '11:30', 'Forecast Centre');
+  ev('ACC-012', 6, 'False-alarm tuning review', 'Internal review', '15:00', '16:00', 'AI Team room');
+  ev('ACC-017', 10, 'Discovery call with sports science', 'Meeting', '10:00', '11:00', 'Online');
+  ev('ACC-013', 11, 'Go / No-Go briefing', 'Meeting', '15:00', '16:00', 'Boardroom');
 }
 
 // Demo approval records for stages already passed, plus who uploaded the current documents.
@@ -164,6 +222,9 @@ function seedApprovals(list) {
   const rtd = list.find(a => a.id === 'ACC-009'), stb = list.find(a => a.id === 'ACC-010');
   rtd.approvals.unshift({ stage: 10, decision: 'converted', by: 'u6', at: daysAgo(30), requestedBy: 'u2', requestedAt: daysAgo(32), comment: 'Strong results with the agency. Proceed to procurement planning.' });
   rtd.approvals.splice(1, 0, { stage: 10, decision: 'extended', by: 'u6', at: daysAgo(95), requestedBy: 'u2', requestedAt: daysAgo(97), comment: 'Extend to test with the renewal backlog.', until: ymd(new Date(Date.now() - 60 * 86400000)) });
+  const moa = list.find(a => a.id === 'ACC-015'), met = list.find(a => a.id === 'ACC-016');
+  moa.approvals.unshift({ stage: 10, decision: 'converted', by: 'u6', at: daysAgo(12), requestedBy: 'u7', requestedAt: daysAgo(14), comment: 'Excellent field results. Start the rollout plan with the ministry.' });
+  met.approvals.splice(met.approvals.findIndex(x => x.stage === 7), 0, { stage: 7, decision: 'returned', by: 'u1', at: daysAgo(31), requestedBy: 'u4', requestedAt: daysAgo(32), comment: 'Add test results for the East Coast stations before the review.' });
   stb.approvals.unshift({ stage: 10, decision: 'closed', by: 'u6', at: daysAgo(45), requestedBy: 'u3', requestedAt: daysAgo(47), reason: 'Budget or procurement blocked', comment: 'No budget allocated for next year. Revisit if funding is approved.' });
 }
 
