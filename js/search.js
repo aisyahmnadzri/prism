@@ -40,7 +40,7 @@ function searchAll(q) {
   if (pageHits.length) groups.push(['Pages', pageHits]);
   // Accounts (including archived ones the person can see)
   const accs = accounts.filter(a => user.role === 'HM' || canView(a))
-    .filter(a => has(a.name, a.useCase, a.id, a.description, a.contact, nameOf(a.am), ...a.devs.map(nameOf)))
+    .filter(a => has(a.name, a.code, a.tier, a.useCase, a.id, a.description, a.cfaRemarks, a.contact, nameOf(a.am), ...a.devs.map(nameOf)))
     .map(a => ({ href: accountLink(a), ic: 'building', title: mark(a.name, q),
       sub: `${mark(a.useCase, q)} · ${a.outcome ? a.outcome : `Stage ${a.stage}`}${a.archived ? ' · Archived' : ''}`,
       badge: a.outcome ? '' : `<span class="badge ${statusClass(a.status)}">${a.status}</span>` }));

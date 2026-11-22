@@ -26,12 +26,19 @@ const STAGES = [
 const DEMO_PASSWORD = 'prism123';
 const SAMPLE_USERS = [
   { id: 'u1', name: 'Hafiz Rahman', email: 'lead@prism.local', personalEmail: 'hafiz.rahman@example.com', role: 'TL', sample: true },
-  { id: 'u2', name: 'Nurul Aina', email: 'aina@prism.local', personalEmail: 'nurul.aina@example.com', role: 'AM', sample: true },
-  { id: 'u3', name: 'Daniel Lim', email: 'daniel@prism.local', personalEmail: 'daniel.lim@example.com', role: 'AM', sample: true },
-  { id: 'u7', name: 'Farah Hanim', email: 'farah@prism.local', personalEmail: 'farah.hanim@example.com', role: 'AM', sample: true },
-  { id: 'u4', name: 'Kavitha Raj', email: 'kavitha@prism.local', personalEmail: 'kavitha.raj@example.com', role: 'DEV', sample: true },
-  { id: 'u5', name: 'Amir Zulkifli', email: 'amir@prism.local', personalEmail: 'amir.z@example.com', role: 'DEV', sample: true },
-  { id: 'u8', name: 'Jason Tan', email: 'jason@prism.local', personalEmail: 'jason.tan@example.com', role: 'DEV', sample: true },
+  { id: 'u2', name: 'Kira', email: 'kira@prism.local', personalEmail: 'kira@example.com', role: 'AM', sample: true },
+  { id: 'u3', name: 'Mala', email: 'mala@prism.local', personalEmail: 'mala@example.com', role: 'AM', sample: true },
+  { id: 'u4', name: 'Aisyah', email: 'aisyah@prism.local', personalEmail: 'aisyah@example.com', role: 'DEV', sample: true },
+  { id: 'u5', name: 'Raimi', email: 'raimi@prism.local', personalEmail: 'raimi@example.com', role: 'DEV', sample: true },
+  { id: 'u7', name: 'Alia', email: 'alia@prism.local', personalEmail: 'alia@example.com', role: 'DEV', sample: true },
+  { id: 'u8', name: 'Fiqry', email: 'fiqry@prism.local', personalEmail: 'fiqry@example.com', role: 'DEV', sample: true },
+  { id: 'u9', name: 'Rian', email: 'rian@prism.local', personalEmail: 'rian@example.com', role: 'DEV', sample: true },
+  { id: 'u10', name: 'Luqman', email: 'luqman@prism.local', personalEmail: 'luqman@example.com', role: 'DEV', sample: true },
+  { id: 'u11', name: 'Fahim', email: 'fahim@prism.local', personalEmail: 'fahim@example.com', role: 'DEV', sample: true },
+  { id: 'u12', name: 'Wan', email: 'wan@prism.local', personalEmail: 'wan@example.com', role: 'DEV', sample: true },
+  { id: 'u13', name: 'Haziq', email: 'haziq@prism.local', personalEmail: 'haziq@example.com', role: 'DEV', sample: true },
+  { id: 'u14', name: 'Hilman', email: 'hilman@prism.local', personalEmail: 'hilman@example.com', role: 'DEV', sample: true },
+  { id: 'u15', name: 'Amir', email: 'amir@prism.local', personalEmail: 'amir@example.com', role: 'DEV', sample: true },
   { id: 'u6', name: 'Rosnah Ismail', email: 'mgmt@prism.local', personalEmail: 'rosnah.ismail@example.com', role: 'HM', sample: true },
 ];
 // The real team, created in the app (first-run setup, then Settings › People and roles)
@@ -46,101 +53,87 @@ function daysAgo(n) {
 //   pending  — set when someone requests approval to move to the next stage
 //   updates  — progress updates (newest first); history — activity log (newest first)
 function acct(o) {
-  return { sector: 'Public', pending: null, outcome: null, archived: null, updates: [], history: [], events: [], plan: null, approvals: [], evidenceBy: [], extension: null, ...o };
+  return { sector: 'Public', code: '', tier: '', pocReady: null, cfaRemarks: '', tracker: null, pending: null, outcome: null, archived: null, updates: [], history: [], events: [], plan: null, approvals: [], evidenceBy: [], extension: null, ...o };
 }
 
 function seedAccounts() {
+  // From the AI Team's Account Allocation & POC Lifecycle Tracker (Nov 2026), mapped onto PRISM's 10 stages.
+  // Team order in devs = Primary, Secondary, Tertiary.
+  const on = (ds, h = 10) => { const d = parseYmd(ds); d.setHours(h, 0, 0, 0); return d.toISOString(); };
+  const K = 'u2', M = 'u3', Ai = 'u4', Ra = 'u5', Al = 'u7', Fi = 'u8', Ri = 'u9', Lu = 'u10', Fa = 'u11', Wa = 'u12', Ha = 'u13', Hi = 'u14', Am = 'u15';
+  const TBC = 'Use case to be confirmed';
+  // Lifecycle columns from the tracker, shown on each account as they appear in the spreadsheet
+  const T = (o) => Object.entries({ 'POC agreement': o.ag, 'Fact finding': o.ff, 'Requirement mapping': o.rm, 'Workflow presentation': o.wp,
+    'POC implementation': o.impl, 'Immersion execution': o.imm, 'Immersion date': o.immDate, 'Solution training': o.st, 'Finetuning': o.ft,
+    'Lunch & Learn': o.ll, 'Post L&L': o.pll, 'CFA paper': o.cfa, 'POC status': o.ps }).filter(([, v]) => v).map(([k, v]) => [k, v]);
   const list = [
-    acct({ id: 'ACC-001', name: 'Ministry of Health', useCase: 'Clinical notes summarisation', am: 'u2', devs: ['u4'], stage: 6, status: 'On Track', progress: 55, stageSince: daysAgo(20),
-      evidence: [null],
-      updates: [
-        { by: 'u4', at: daysAgo(2), status: 'On Track', progress: 55, note: 'Summarisation model fine-tuned on 2,000 anonymised notes. Accuracy 87% on test set.', blockers: '' },
-        { by: 'u2', at: daysAgo(9), status: 'On Track', progress: 35, note: 'Weekly check-in with agency IT. Agreed demo date for next month.', blockers: 'Waiting on second batch of sample notes.' },
-      ],
-      history: [
-        { by: 'u4', at: daysAgo(2), text: 'Posted a progress update (55%)' },
-        { by: 'u1', at: daysAgo(20), text: 'Approved: Data & Environment Readiness → POC Development' },
-        { by: 'u4', at: daysAgo(21), text: 'Requested approval to move to POC Development' },
-      ] }),
-    acct({ id: 'ACC-002', name: 'Public Works Department', useCase: 'Road defect detection from images', am: 'u3', devs: ['u5'], stage: 3, status: 'On Track', progress: 25, stageSince: daysAgo(10),
-      evidence: ['POC_Proposal_PWD.pdf', 'Success_Criteria.xlsx'], pending: { by: 'u3', at: daysAgo(6) },
-      history: [{ by: 'u3', at: daysAgo(6), text: 'Requested approval to move to Agreement & Kick-off' }] }),
-    acct({ id: 'ACC-003', name: 'Immigration Department', useCase: 'Document verification assistant', am: 'u2', devs: ['u4', 'u5'], stage: 8, status: 'At Risk', progress: 85, stageSince: daysAgo(18),
-      evidence: [null],
-      updates: [{ by: 'u2', at: daysAgo(3), status: 'At Risk', progress: 85, note: 'Demo done. Agency asked for extra test on passport scans before evaluation.', blockers: 'Agency evaluation panel not yet confirmed.' }] }),
-    acct({ id: 'ACC-004', name: 'Ministry of Education', useCase: 'Teacher lesson-plan assistant', am: 'u3', devs: ['u5'], stage: 2, status: 'Delayed', progress: 15, stageSince: daysAgo(25),
-      evidence: ['Use_Case_Brief_MOE.docx', 'Data_Assessment.pdf'], pending: { by: 'u3', at: daysAgo(3) },
-      history: [{ by: 'u3', at: daysAgo(3), text: 'Requested approval to move to POC Proposal & Scoping' }] }),
-    acct({ id: 'ACC-005', name: 'Land & Mines Office', useCase: 'Land title search chatbot', am: 'u2', devs: [], stage: 1, status: 'On Track', progress: 5, stageSince: daysAgo(5),
-      evidence: ['Problem_Statement.pdf', 'Agency_Contact.txt'], pending: { by: 'u1', at: daysAgo(1) },
-      history: [{ by: 'u1', at: daysAgo(1), text: 'Requested approval to move to Discovery & Use Case' }] }),
-    acct({ id: 'ACC-006', name: 'Inland Revenue Board', useCase: 'Tax enquiry triage', am: 'u3', devs: ['u4'], stage: 10, status: 'On Track', progress: 100, stageSince: daysAgo(4),
-      evidence: ['Decision_Memo_IRB.pdf'], pending: { by: 'u3', at: daysAgo(1) },
-      history: [{ by: 'u3', at: daysAgo(1), text: 'Requested Go / No-Go decision' }] }),
-    acct({ id: 'ACC-007', name: 'Department of Statistics', useCase: 'Survey data cleaning automation', am: 'u2', devs: ['u5'], stage: 5, status: 'On Hold', progress: 40, stageSince: daysAgo(9),
-      evidence: ['Data_Received_Checklist.xlsx', null],
-      updates: [{ by: 'u5', at: daysAgo(4), status: 'On Hold', progress: 40, note: 'Environment setup paused.', blockers: 'Agency security clearance for cloud environment still pending.' }] }),
-    acct({ id: 'ACC-008', name: 'City Council', useCase: 'Citizen complaint classifier', am: 'u3', devs: ['u4'], stage: 7, status: 'On Track', progress: 90, stageSince: daysAgo(3),
-      evidence: ['Internal_Review_Notes.docx'], pending: { by: 'u4', at: daysAgo(0) },
-      history: [{ by: 'u4', at: daysAgo(0), text: 'Requested approval to move to Client Demo & Evaluation' }] }),
-    acct({ id: 'ACC-009', name: 'Road Transport Department', useCase: 'Licence renewal chatbot', am: 'u2', devs: ['u5'], stage: 10, status: 'On Track', progress: 100, stageSince: daysAgo(30),
-      evidence: ['Decision_Memo_RTD.pdf'], outcome: 'Converted',
-      history: [
-        { by: 'u6', at: daysAgo(30), text: 'Decision: POC converted' },
-        { by: 'u6', at: daysAgo(95), text: 'Decision: POC extended — back to POC Development' },
-      ] }),
-    acct({ id: 'ACC-010', name: 'State Tourism Board', useCase: 'Visitor itinerary recommender', am: 'u3', devs: ['u4'], stage: 10, status: 'On Track', progress: 100, stageSince: daysAgo(45),
-      evidence: ['Decision_Memo_STB.pdf'], outcome: 'Closed', archived: { at: daysAgo(30), by: 'u1' },
-      history: [{ by: 'u1', at: daysAgo(30), text: 'Archived the account' }, { by: 'u6', at: daysAgo(45), text: 'Decision: POC closed' }] }),
-    acct({ id: 'ACC-011', name: 'Fire and Rescue Department', useCase: 'Emergency call transcription', am: 'u7', devs: ['u8'], stage: 4, status: 'On Track', progress: 30, stageSince: daysAgo(8),
-      evidence: ['Signed_LOI_Fire_Rescue.pdf', null],
-      updates: [{ by: 'u7', at: daysAgo(2), status: 'On Track', progress: 30, note: 'Letter of intent signed. Data sharing agreement is with their legal team.', blockers: '' }],
-      history: [{ by: 'u7', at: daysAgo(2), text: 'Posted a progress update (30%)' }] }),
-    acct({ id: 'ACC-012', name: 'National Registration Department', useCase: 'Identity document fraud detection', am: 'u2', devs: ['u8', 'u4'], stage: 6, status: 'At Risk', progress: 48, stageSince: daysAgo(34),
-      evidence: [null],
-      updates: [
-        { by: 'u8', at: daysAgo(1), status: 'At Risk', progress: 48, note: 'Detector catches 91% of tampered samples but false alarms are still high on worn cards.', blockers: 'Need 1,000 more genuine worn-card samples from the agency.' },
-        { by: 'u2', at: daysAgo(12), status: 'On Track', progress: 30, note: 'Agency shared the first 5,000 labelled samples.', blockers: '' },
-      ],
-      history: [{ by: 'u8', at: daysAgo(1), text: 'Posted a progress update (48%)' }] }),
-    acct({ id: 'ACC-013', name: 'Social Security Organisation', useCase: 'Claims form data extraction', am: 'u7', devs: ['u5'], stage: 9, status: 'On Track', progress: 95, stageSince: daysAgo(6),
-      evidence: ['POC_Completion_Letter_SSO.pdf'], pending: { by: 'u5', at: daysAgo(1) },
-      updates: [{ by: 'u7', at: daysAgo(3), status: 'On Track', progress: 95, note: 'Agency signed the completion letter. Extraction accuracy 96% across 12 form types.', blockers: '' }],
-      history: [{ by: 'u5', at: daysAgo(1), text: 'Requested approval to move to Go / No-Go Decision' }] }),
-    acct({ id: 'ACC-014', name: 'Harbour Logistics Sdn Bhd', sector: 'Private', useCase: 'Container damage inspection from photos', am: 'u3', devs: ['u8'], stage: 2, status: 'On Track', progress: 12, stageSince: daysAgo(7),
-      evidence: ['Use_Case_Brief_Harbour.docx', null],
-      updates: [{ by: 'u3', at: daysAgo(4), status: 'On Track', progress: 12, note: 'First private-sector POC. Site visit done; they have 3 years of inspection photos.', blockers: '' }] }),
-    acct({ id: 'ACC-015', name: 'Ministry of Agriculture', useCase: 'Crop disease detection from leaf photos', am: 'u7', devs: ['u5', 'u8'], stage: 10, status: 'On Track', progress: 100, stageSince: daysAgo(26),
-      evidence: ['Decision_Memo_MOA.pdf'], outcome: 'Converted',
-      history: [{ by: 'u6', at: daysAgo(12), text: 'Decision: POC converted' }] }),
-    acct({ id: 'ACC-016', name: 'Meteorological Department', useCase: 'Flood warning summariser', am: 'u3', devs: ['u4'], stage: 8, status: 'Delayed', progress: 72, stageSince: daysAgo(24),
-      evidence: [null],
-      updates: [{ by: 'u3', at: daysAgo(5), status: 'Delayed', progress: 72, note: 'Client demo moved twice because of the monsoon response.', blockers: 'Agency team busy with flood operations until next month.' }],
-      history: [{ by: 'u1', at: daysAgo(31), text: 'Returned for rework: Internal Review' }] }),
-    acct({ id: 'ACC-017', name: 'Ministry of Youth and Sports', useCase: 'Athlete performance insights', am: 'u2', devs: [], stage: 1, status: 'On Track', progress: 3, stageSince: daysAgo(2),
-      evidence: ['Problem_Statement_KBS.pdf', null],
-      history: [{ by: 'u2', at: daysAgo(2), text: 'Created the account' }] }),
+    acct({ id: 'ACC-001', name: 'Kementerian Kewangan Malaysia', code: 'MOF', tier: 'Tier 1', pocReady: true, useCase: TBC, am: K, devs: [], stage: 9, status: 'On Track', progress: 50, stageSince: daysAgo(24),
+      cfaRemarks: 'Open tender process. Waiting for AWS to finalise.', evidence: [null],
+      tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'deployed', imm: 'Done', cfa: 'ongoing', ps: 'ongoing' }),
+      updates: [{ by: K, at: on('2026-10-16'), status: 'On Track', progress: 50, note: 'CFA paper ongoing. Open tender process.', blockers: 'Waiting for AWS to finalise.' }] }),
+    acct({ id: 'ACC-002', name: 'Pejabat Perdana Menteri', code: 'PMO', tier: 'Tier 2', pocReady: true, useCase: TBC, am: K, devs: [Ai], stage: 6, status: 'On Track', progress: 33, stageSince: daysAgo(75),
+      evidence: [null], tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'development', imm: 'Done', immDate: 'Monday, 14 September 2026', cfa: 'not started', ps: 'ongoing' }) }),
+    acct({ id: 'ACC-003', name: 'Institut Integriti Malaysia (IIM)', code: 'IIM', tier: 'Tier 3', pocReady: true, useCase: TBC, am: M, devs: [Ai, Al, Fi], stage: 6, status: 'At Risk', progress: 33, stageSince: daysAgo(45),
+      evidence: [null], tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'finetune', imm: 'Done', ft: 'iteration needed', cfa: 'not started', ps: 'not started' }),
+      updates: [{ by: Ai, at: daysAgo(4), status: 'At Risk', progress: 33, note: 'Finetuning results reviewed. Another iteration is needed.', blockers: 'Finetuning needs another iteration.' }] }),
+    acct({ id: 'ACC-004', name: 'Kementerian Ekonomi', code: 'KE', tier: 'Tier 2', pocReady: true, useCase: TBC, am: K, devs: [Ai], stage: 9, status: 'On Track', progress: 50, stageSince: daysAgo(20),
+      cfaRemarks: '16/10: To submit at JPP CFA on 18/11.', evidence: [null],
+      tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'deployed', imm: 'Done', ll: 'done', pll: 'new use case', cfa: 'not started', ps: 'ongoing' }),
+      updates: [{ by: K, at: on('2026-10-16'), status: 'On Track', progress: 50, note: 'Lunch & Learn done and a new use case came out of it. To submit at JPP CFA on 18/11.', blockers: '' }] }),
+    acct({ id: 'ACC-005', name: 'Pertubuhan Keselamatan Sosial (PERKESO)', code: 'PERKESO', tier: 'Tier 3', pocReady: true, useCase: TBC, am: K, devs: [Ri], stage: 6, status: 'On Track', progress: 33, stageSince: daysAgo(28),
+      evidence: [null], tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'development', imm: 'Not Yet', cfa: 'not started', ps: 'not started' }) }),
+    acct({ id: 'ACC-006', name: 'Kementerian Perumahan dan Kerajaan Tempatan', code: 'KPKT', tier: 'Tier 2', pocReady: true, useCase: TBC, am: M, devs: [Ai, Lu, Fa], stage: 6, status: 'On Track', progress: 33, stageSince: daysAgo(32),
+      evidence: [null], tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'development', imm: 'Not Yet', cfa: 'not started', ps: 'ongoing' }) }),
+    acct({ id: 'ACC-007', name: 'Parlimen Malaysia', code: 'PARLIMEN', tier: 'Tier 3', pocReady: false, useCase: TBC, am: M, devs: [Ra, Wa, Lu], stage: 5, status: 'At Risk', progress: 33, stageSince: daysAgo(38),
+      evidence: [null, null], tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', imm: 'Not Yet', cfa: 'not started', ps: 'not started' }),
+      updates: [{ by: M, at: daysAgo(6), status: 'At Risk', progress: 33, note: 'Implementation can start once the POC account is ready.', blockers: 'POC account not ready.' }] }),
+    acct({ id: 'ACC-008', name: 'Kementerian Peralihan Tenaga Dan Transformasi Air (PETRA)', code: 'PETRA', tier: 'Tier 2', pocReady: true, useCase: TBC, am: K, devs: [Ra, Al], stage: 8, status: 'On Track', progress: 50, stageSince: daysAgo(56),
+      evidence: [null], tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'deployed', imm: 'Done', immDate: 'Monday, 28 September 2026', ll: 'to have', cfa: 'not started', ps: 'ongoing' }) }),
+    acct({ id: 'ACC-009', name: 'Kementerian Pengangkutan Malaysia', code: 'MOT', tier: 'Tier 1', pocReady: true, useCase: TBC, am: K, devs: [Ra, Ha, Hi], stage: 10, status: 'On Track', progress: 50, stageSince: daysAgo(38),
+      cfaRemarks: '16/10: Submitted the CGSO paper. The next JDN JPPCSA will be in November.', evidence: ['CGSO_Paper_MOT.pdf'], pending: { by: K, at: on('2026-10-16', 15) },
+      tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'deployed', imm: 'Done', ll: 'to have', cfa: 'ongoing', ps: 'ongoing' }),
+      updates: [{ by: K, at: on('2026-10-16'), status: 'On Track', progress: 50, note: 'Submitted the CGSO paper. The next JDN JPPCSA will be in November.', blockers: '' }],
+      history: [{ by: K, at: on('2026-10-16', 15), text: 'Requested Go / No-Go decision' }] }),
+    acct({ id: 'ACC-010', name: 'Unit Transformasi Masyarakat India Malaysia (MITRA)', code: 'MITRA', tier: 'Tier 1', pocReady: true, useCase: TBC, am: M, devs: [Ra, Ha, Hi], stage: 9, status: 'On Track', progress: 50, stageSince: daysAgo(30),
+      cfaRemarks: '16/10: Just entered the sectoral approval process phase.', evidence: [null],
+      tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', impl: 'deployed', imm: 'Done', cfa: 'ongoing', ps: 'ongoing' }),
+      updates: [{ by: M, at: on('2026-10-16'), status: 'On Track', progress: 50, note: 'Just entered the sectoral approval process phase.', blockers: '' }] }),
+    acct({ id: 'ACC-011', name: 'Suruhanjaya Koperasi Malaysia (SKM)', code: 'SKM', tier: 'Tier 3', pocReady: null, useCase: TBC, am: M, devs: [], stage: 10, status: 'On Track', progress: 33, stageSince: daysAgo(40),
+      evidence: [null], outcome: 'Closed', tracker: T({ ag: 'received', ff: 'done', rm: 'todo', wp: 'todo', imm: 'Done', immDate: 'Thursday, 11 June 2026', cfa: 'not started', ps: 'ended' }),
+      history: [{ by: 'u6', at: daysAgo(20), text: 'Decision: POC closed' }] }),
+    acct({ id: 'ACC-012', name: 'Kementerian Kemajuan Desa dan Wilayah', code: 'KKDW', tier: 'Tier 4', pocReady: null, useCase: TBC, am: K, devs: [], stage: 2, status: 'On Hold', progress: 0, stageSince: daysAgo(48),
+      evidence: [null, null], tracker: T({ ag: 'pending', ff: 'onhold', rm: 'todo', wp: 'todo', cfa: 'not started', ps: 'not started' }) }),
+    acct({ id: 'ACC-013', name: 'Kementerian Kerja Raya', code: 'KKR', tier: 'Tier 4', pocReady: null, useCase: TBC, am: M, devs: [], stage: 2, status: 'On Hold', progress: 0, stageSince: daysAgo(48),
+      evidence: [null, null], tracker: T({ ag: 'pending', ff: 'onhold', rm: 'todo', wp: 'todo', cfa: 'not started', ps: 'not started' }) }),
+    acct({ id: 'ACC-014', name: 'Kementerian Pendidikan Malaysia', code: 'KPM', tier: 'Tier 4', pocReady: null, useCase: TBC, am: K, devs: [], stage: 2, status: 'On Hold', progress: 0, stageSince: daysAgo(55),
+      cfaRemarks: 'Waiting for approval from Pengarah on Oct 11.', evidence: [null, null],
+      tracker: T({ ag: 'pending', ff: 'onhold', rm: 'todo', wp: 'todo', cfa: 'not started', ps: 'not started' }),
+      updates: [{ by: K, at: on('2026-10-11'), status: 'On Hold', progress: 0, note: 'Fact finding on hold.', blockers: 'Waiting for approval from Pengarah.' }] }),
+    acct({ id: 'ACC-016', name: 'Jabatan Kimia', code: 'KIMIA', tier: 'Tier 3', pocReady: true, useCase: TBC, am: K, devs: [Ri], stage: 5, status: 'On Track', progress: 67, stageSince: daysAgo(14),
+      evidence: ['Data_Received_Checklist_KIMIA.xlsx', 'Environment_Ready_KIMIA.pdf'], pending: { by: Ri, at: daysAgo(2) },
+      tracker: T({ ag: 'received', ff: 'done', rm: 'done', wp: 'done', imm: 'Not Yet', immDate: 'Wednesday, 18 November 2026', cfa: 'not started', ps: 'not started' }),
+      history: [{ by: Ri, at: daysAgo(2), text: 'Requested approval to move to POC Development' }] }),
+    acct({ id: 'ACC-017', name: 'Kementerian Pembangunan Usahawan dan Koperasi', code: 'KUSKOP', tier: 'Tier 2', pocReady: true, useCase: TBC, am: M, devs: [Ra, Am], stage: 7, status: 'On Track', progress: 50, stageSince: daysAgo(6),
+      evidence: ['Internal_Review_Notes_KUSKOP.docx'], pending: { by: Ra, at: daysAgo(1) },
+      tracker: T({ ag: 'received', ff: 'ongoing', rm: 'done', impl: 'deployed', imm: 'Not Yet', ll: 'to have', cfa: 'not started', ps: 'ongoing' }),
+      history: [{ by: Ra, at: daysAgo(1), text: 'Requested approval to move to Client Demo & Evaluation' }] }),
+    acct({ id: 'ACC-018', name: 'Kementerian Kesihatan Malaysia', code: 'KKM', tier: 'Tier 4', pocReady: true, useCase: TBC, am: K, devs: [Ra, Fi, Ha], stage: 2, status: 'On Track', progress: 0, stageSince: daysAgo(12),
+      evidence: [null, null], tracker: T({ ag: 'pending', ff: 'ongoing', rm: 'ongoing', imm: 'Not Yet', cfa: 'not started', ps: 'not started' }) }),
+    acct({ id: 'ACC-019', name: 'Kementerian Belia dan Sukan', code: 'KBS', tier: 'Tier 3', pocReady: true, useCase: TBC, am: K, devs: [Ai], stage: 2, status: 'On Track', progress: 17, stageSince: daysAgo(18),
+      evidence: ['Use_Case_Brief_KBS.docx', 'Data_Assessment_KBS.pdf'], pending: { by: K, at: daysAgo(3) },
+      tracker: T({ ag: 'received', ff: 'ongoing', rm: 'ongoing', imm: 'Not Yet', cfa: 'not started', ps: 'not started' }),
+      history: [{ by: K, at: daysAgo(3), text: 'Requested approval to move to POC Proposal & Scoping' }] }),
+    acct({ id: 'ACC-020', name: 'Kementerian Perpaduan Negara', code: 'KPN', tier: 'Tier 3', pocReady: true, useCase: TBC, am: K, devs: [Ai], stage: 2, status: 'On Track', progress: 17, stageSince: daysAgo(18),
+      evidence: ['Use_Case_Brief_KPN.docx', null], tracker: T({ ag: 'received', ff: 'ongoing', rm: 'ongoing', imm: 'Not Yet', cfa: 'not started', ps: 'not started' }) }),
+    acct({ id: 'ACC-021', name: 'Indah Water Konsortium', code: 'IWK', tier: 'Tier 4', pocReady: null, useCase: TBC, am: M, devs: [Ra, Al], stage: 2, status: 'On Hold', progress: 0, stageSince: daysAgo(40),
+      evidence: [null, null], tracker: T({ ag: 'pending', ff: 'onhold', imm: 'Not Yet' }) }),
+    acct({ id: 'ACC-022', name: 'Jabatan Audit Negara', code: 'JAN', tier: 'Tier 4', pocReady: null, useCase: TBC, am: '', devs: [Ai], stage: 2, status: 'On Hold', progress: 0, stageSince: daysAgo(40),
+      evidence: [null, null], tracker: T({ ag: 'pending', ff: 'onhold', rm: 'ongoing', imm: 'Not Yet' }) }),
+    acct({ id: 'ACC-023', name: 'Jabatan Pengairan & Saliran', code: 'JPS', tier: 'Tier 4', pocReady: null, useCase: TBC, am: M, devs: [], stage: 1, status: 'On Track', progress: 0, stageSince: daysAgo(6),
+      evidence: [null, null] }),
+    acct({ id: 'ACC-024', name: 'Institut Keusahawanan Negara (INSKEN)', code: 'INSKEN', tier: 'Tier 4', pocReady: null, useCase: TBC, am: M, devs: [], stage: 1, status: 'On Track', progress: 0, stageSince: daysAgo(6),
+      evidence: [null, null] }),
   ];
-  const about = {
-    'ACC-001': ['Doctors spend up to two hours a day writing discharge summaries. Summarise clinical notes into a draft for review.', 'Head of Digital Health, MOH IT Division'],
-    'ACC-002': ['Detect potholes and cracks from survey vehicle footage to prioritise road repairs.', 'Senior Engineer, Road Maintenance Unit'],
-    'ACC-003': ['Check visa application documents automatically and flag mismatches for officers.', 'Deputy Director, Visa Division'],
-    'ACC-004': ['Help teachers draft lesson plans aligned to the national curriculum.', 'Curriculum Development Division'],
-    'ACC-005': ['Answer public questions about land title searches without a counter visit.', 'Customer Service Unit'],
-    'ACC-006': ['Route tax enquiries to the right team and draft first replies.', 'Head of Contact Centre'],
-    'ACC-007': ['Automate cleaning of household survey returns before analysis.', 'Data Processing Division'],
-    'ACC-008': ['Classify citizen complaints and send them to the right department.', 'Smart City Unit'],
-    'ACC-009': ['Handle licence renewal questions on the web and messaging apps.', 'Licensing Division'],
-    'ACC-010': ['Recommend visitor itineraries from interests and travel dates.', 'Digital Marketing Unit'],
-    'ACC-011': ['Transcribe emergency calls live so dispatchers can see key details.', 'Operations Centre'],
-    'ACC-012': ['Spot tampered identity cards at registration counters.', 'Document Security Unit'],
-    'ACC-013': ['Pull fields out of scanned claim forms to cut manual data entry.', 'Claims Processing Division'],
-    'ACC-014': ['Find container damage in gate photos before cargo is accepted.', 'Head of Port Operations'],
-    'ACC-015': ['Farmers photograph a leaf and get the likely disease and treatment.', 'Crop Protection Division'],
-    'ACC-016': ['Turn flood forecasts into short plain-language warnings.', 'Forecasting Division'],
-    'ACC-017': ['Give coaches insights from training and competition data.', 'Sports Science Unit'],
-  };
-  list.forEach(a => { if (about[a.id]) { a.description = about[a.id][0]; a.contact = about[a.id][1]; } });
   seedSchedule(list);
   seedApprovals(list);
   return list;
@@ -171,35 +164,33 @@ function autoPlan(currentStage, currentStart) {
 }
 
 // Demo schedule: some POCs started their current stage later than planned (slip, in days).
-const PLAN_SLIP = { 'ACC-001': 6, 'ACC-003': 4, 'ACC-004': 10, 'ACC-006': 2, 'ACC-007': 5, 'ACC-012': 7, 'ACC-016': 9 };
+const PLAN_SLIP = { 'ACC-003': 8, 'ACC-007': 10, 'ACC-012': 14, 'ACC-013': 14, 'ACC-014': 20, 'ACC-021': 9, 'ACC-022': 9, 'ACC-002': 12 };
 function seedSchedule(list) {
   list.forEach(a => { a.plan = autoPlan(a.stage, addDays(new Date(a.stageSince), -(PLAN_SLIP[a.id] || 0))); });
   let n = 0;
-  const ev = (id, day, title, type, start, end, location) => {
-    list.find(x => x.id === id).events.push({ id: 'EV-' + (++n), title, type, date: ymd(addDays(new Date(), day)), start, end, location, notes: '', by: 'u1' });
+  const add = (id, date, title, type, start, end, location) => {
+    list.find(x => x.id === id).events.push({ id: 'EV-' + (++n), title, type, date, start, end, location, notes: '', by: 'u1' });
   };
-  ev('ACC-001', -6, 'Second batch of sample notes handover', 'Site visit', '10:00', '11:30', 'MOH IT Division');
-  ev('ACC-003', -3, 'Passport scan test session', 'Workshop', '14:00', '16:00', 'Immigration HQ');
-  ev('ACC-008', -1, 'Internal QA review', 'Internal review', '15:00', '16:00', 'AI Team room');
-  ev('ACC-003', 1, 'Evaluation panel briefing', 'Client demo', '10:00', '12:00', 'Immigration HQ');
-  ev('ACC-001', 2, 'Weekly check-in with MOH IT', 'Meeting', '10:00', '10:45', 'Online');
-  ev('ACC-004', 3, 'Use-case workshop #2', 'Workshop', '09:00', '12:00', 'MOE Curriculum Division');
-  ev('ACC-002', 4, 'Scope and success criteria sign-off', 'Meeting', '09:30', '10:30', 'PWD HQ');
-  ev('ACC-006', 5, 'Go / No-Go decision meeting', 'Meeting', '15:00', '16:00', 'Boardroom');
-  ev('ACC-005', 6, 'Discovery kick-off', 'Meeting', '11:00', '12:00', 'Land & Mines Office');
-  ev('ACC-008', 7, 'Client demo', 'Client demo', '10:00', '11:30', 'City Hall');
-  ev('ACC-007', 8, 'Security clearance follow-up', 'Meeting', '14:30', '15:00', 'Online');
-  ev('ACC-001', 9, 'Model accuracy review', 'Internal review', '14:30', '15:30', 'AI Team room');
-  ev('ACC-002', 12, 'Site visit: road survey footage', 'Site visit', '08:30', '12:30', 'Federal Route 2');
-  ev('ACC-003', 15, 'Evaluation results walkthrough', 'Client demo', '10:00', '11:00', 'Immigration HQ');
-  ev('ACC-012', -2, 'Fraud sample review with agency', 'Workshop', '10:00', '12:00', 'Registration HQ');
-  ev('ACC-013', 0, 'Completion letter handover', 'Meeting', '11:00', '11:30', 'Online');
-  ev('ACC-011', 1, 'Data sharing agreement review', 'Meeting', '14:00', '15:00', 'Legal Division');
-  ev('ACC-014', 2, 'Port gate site visit', 'Site visit', '09:00', '12:00', 'North Port');
-  ev('ACC-016', 4, 'Rescheduled client demo', 'Client demo', '10:00', '11:30', 'Forecast Centre');
-  ev('ACC-012', 6, 'False-alarm tuning review', 'Internal review', '15:00', '16:00', 'AI Team room');
-  ev('ACC-017', 10, 'Discovery call with sports science', 'Meeting', '10:00', '11:00', 'Online');
-  ev('ACC-013', 11, 'Go / No-Go briefing', 'Meeting', '15:00', '16:00', 'Boardroom');
+  const ev = (id, day, ...rest) => add(id, ymd(addDays(new Date(), day)), ...rest);
+  // Dates from the tracker
+  add('ACC-011', '2026-06-11', 'Immersion session', 'Workshop', '09:00', '13:00', 'SKM');
+  add('ACC-002', '2026-09-14', 'Immersion session', 'Workshop', '09:00', '13:00', 'PMO');
+  add('ACC-008', '2026-09-28', 'Immersion session', 'Workshop', '09:00', '13:00', 'PETRA');
+  add('ACC-004', '2026-11-18', 'JPP CFA submission', 'Meeting', '10:00', '11:00', 'Kementerian Ekonomi');
+  add('ACC-016', '2026-11-18', 'Immersion session', 'Workshop', '09:00', '13:00', 'Jabatan Kimia');
+  // Upcoming follow-ups for items marked ongoing or "to have"
+  ev('ACC-003', 1, 'Finetuning iteration review', 'Internal review', '14:30', '15:30', 'AI Team room');
+  ev('ACC-019', 2, 'Fact finding session', 'Meeting', '10:00', '12:00', 'KBS');
+  ev('ACC-007', 3, 'POC account readiness follow-up', 'Meeting', '11:00', '11:30', 'Online');
+  ev('ACC-009', 4, 'JDN JPPCSA meeting (date to confirm)', 'Meeting', '10:00', '12:00', 'JDN');
+  ev('ACC-020', 5, 'Fact finding session', 'Meeting', '10:00', '12:00', 'KPN');
+  ev('ACC-017', 6, 'Immersion planning', 'Meeting', '15:00', '16:00', 'Online');
+  ev('ACC-018', 7, 'Requirement mapping workshop', 'Workshop', '09:30', '12:30', 'KKM');
+  ev('ACC-008', 9, 'Lunch & Learn', 'Client demo', '12:30', '14:00', 'PETRA');
+  ev('ACC-001', 10, 'Tender status check-in', 'Meeting', '10:00', '10:30', 'Online');
+  ev('ACC-009', 12, 'Lunch & Learn', 'Client demo', '12:30', '14:00', 'MOT');
+  ev('ACC-017', 14, 'Lunch & Learn', 'Client demo', '12:30', '14:00', 'KUSKOP');
+  ev('ACC-023', 15, 'Opportunity discussion', 'Meeting', '10:00', '11:00', 'JPS');
 }
 
 // Demo approval records for stages already passed, plus who uploaded the current documents.
@@ -211,21 +202,16 @@ function seedApprovals(list) {
     for (let id = lastStage - 1; id >= 1; id--) {
       const s = STAGES[id - 1], p = a.plan && a.plan[id];
       if (!p) continue;
-      const approver = s.approver === 'AM' ? a.am : s.approver === 'HM' ? 'u6' : 'u1';
-      const requester = s.approver === 'AM' ? (a.devs[0] || 'u1') : a.am;
+      const approver = s.approver === 'AM' ? (a.am || 'u1') : s.approver === 'HM' ? 'u6' : 'u1';
+      const requester = s.approver === 'AM' ? (a.devs[0] || 'u1') : (a.am || 'u1');
       const decided = at(p.end);
       a.approvals.push({ stage: id, decision: 'approved', by: approver, at: decided, requestedBy: requester, requestedAt: new Date(new Date(decided) - 86400000).toISOString(), comment: comments[id] || '' });
     }
     a.approvals.sort((x, y) => y.at.localeCompare(x.at));
-    a.evidenceBy = a.evidence.map(f => f ? { by: a.pending ? a.pending.by : a.am, at: a.pending ? a.pending.at : a.stageSince } : null);
+    a.evidenceBy = a.evidence.map(f => f ? { by: a.pending ? a.pending.by : (a.am || 'u1'), at: a.pending ? a.pending.at : a.stageSince } : null);
   });
-  const rtd = list.find(a => a.id === 'ACC-009'), stb = list.find(a => a.id === 'ACC-010');
-  rtd.approvals.unshift({ stage: 10, decision: 'converted', by: 'u6', at: daysAgo(30), requestedBy: 'u2', requestedAt: daysAgo(32), comment: 'Strong results with the agency. Proceed to procurement planning.' });
-  rtd.approvals.splice(1, 0, { stage: 10, decision: 'extended', by: 'u6', at: daysAgo(95), requestedBy: 'u2', requestedAt: daysAgo(97), comment: 'Extend to test with the renewal backlog.', until: ymd(new Date(Date.now() - 60 * 86400000)) });
-  const moa = list.find(a => a.id === 'ACC-015'), met = list.find(a => a.id === 'ACC-016');
-  moa.approvals.unshift({ stage: 10, decision: 'converted', by: 'u6', at: daysAgo(12), requestedBy: 'u7', requestedAt: daysAgo(14), comment: 'Excellent field results. Start the rollout plan with the ministry.' });
-  met.approvals.splice(met.approvals.findIndex(x => x.stage === 7), 0, { stage: 7, decision: 'returned', by: 'u1', at: daysAgo(31), requestedBy: 'u4', requestedAt: daysAgo(32), comment: 'Add test results for the East Coast stations before the review.' });
-  stb.approvals.unshift({ stage: 10, decision: 'closed', by: 'u6', at: daysAgo(45), requestedBy: 'u3', requestedAt: daysAgo(47), reason: 'Budget or procurement blocked', comment: 'No budget allocated for next year. Revisit if funding is approved.' });
+  const skm = list.find(a => a.id === 'ACC-011');
+  skm.approvals.unshift({ stage: 10, decision: 'closed', by: 'u6', at: daysAgo(20), requestedBy: 'u3', requestedAt: daysAgo(22), reason: 'Other', comment: 'POC ended.' });
 }
 
 // ---- storage helpers (browser storage; real backend later) ----

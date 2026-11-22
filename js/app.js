@@ -536,8 +536,13 @@ function pipelineFiltered(list) {
     (pf.flag === 'all' || (pf.flag === 'pending' && a.pending && !a.outcome) || (pf.flag === 'overdue' && isOverdue(a))));
 }
 
+const TEAM_ORDER = ['Primary', 'Secondary', 'Tertiary'];
+const TIERS = ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'];
+const teamText = a => a.devs.map((id, i) => `${esc(nameOf(id))}${TEAM_ORDER[i] ? ` <span class="sub">(${TEAM_ORDER[i]})</span>` : ''}`).join(', ');
+const pocReadyText = v => v === true ? '<span class="badge b-ontrack">Ready</span>' : v === false ? '<span class="badge b-atrisk">Not ready</span>' : '<span class="sub">Not set</span>';
+
 function avatars(a) {
-  const people = [{ id: a.am, cls: 'am', role: 'Account Manager' }, ...a.devs.map(id => ({ id, cls: 'dev', role: 'Developer' }))];
+  const people = [...(a.am ? [{ id: a.am, cls: 'am', role: 'Account Manager' }] : []), ...a.devs.map((id, i) => ({ id, cls: 'dev', role: TEAM_ORDER[i] || 'Developer' }))];
   return `<span class="avs">${people.map(p => `<span class="av ${p.cls}" data-u="${p.id}" title="${esc(nameOf(p.id))} · ${p.role}">${esc(initials(nameOf(p.id)))}</span>`).join('')}</span>`;
 }
 
@@ -654,13 +659,13 @@ function accountsPage(activeList) {
     const status = a.outcome ? `<span class="badge ${statusClass(a.outcome)}">${a.outcome}</span>` : `<span class="badge ${statusClass(a.status)}">${a.status}</span>`;
     const pend = a.pending && !a.outcome ? ` <span class="badge b-pending">Pending ${ROLES[s.approver].label}</span>` : '';
     return `<tr class="row-link" data-href="${accountLink(a)}">
-      <td class="c-name"><a href="${accountLink(a)}"><b>${esc(a.name)}</b></a><div class="sub">${a.id} · ${a.sector} sector</div></td>
+      <td class="c-name"><a href="${accountLink(a)}"><b>${esc(a.name)}</b></a><div class="sub">${a.code ? `<b class="code">${esc(a.code)}</b> · ` : `${a.id} · `}${a.tier ? `${a.tier} · ` : ''}${a.sector} sector</div></td>
       <td class="c-use" data-label="Use case">${esc(a.useCase)}</td>
       <td class="c-stage" data-label="Stage">${s.id}. ${esc(s.name)}${pend}</td>
       <td class="c-status" data-label="Status">${status}</td>
       <td data-label="Progress"><span class="progress"><i style="width:${a.progress}%"></i></span>${a.progress}%</td>
       <td data-label="Days in stage">${a.outcome ? '—' : `${daysIn(a)} / ${s.targetDays}d${isOverdue(a) ? ' <span class="overdue">overdue</span>' : ''}`}</td>
-      <td data-label="Account Manager">${esc(nameOf(a.am))}</td>
+      <td data-label="Account Manager">${a.am ? esc(nameOf(a.am)) : '<span class="sub">Unassigned</span>'}</td>
       <td data-label="Developers">${devs}</td>
       ${view === 'archived' ? `<td data-label="Archived">${fmtDate(a.archived.at)}<div class="sub">by ${esc(nameOf(a.archived.by))}</div>
         ${user.role === 'TL' ? `<button type="button" class="btn btn-sm restore-btn" data-act="restore" data-id="${a.id}">Restore</button>` : ''}</td>` : ''}
@@ -763,11 +768,15 @@ function accountPage() {
   const facts = [
     ['Stage', `${s.id}. ${esc(s.name)}`],
     ['Progress', `<span class="progress"><i style="width:${a.progress}%"></i></span>${a.progress}%`],
-    ['Account Manager', esc(nameOf(a.am))],
-    ['Developers', a.devs.map(nameOf).map(esc).join(', ') || '<span class="sub">Unassigned</span>'],
+    ['Account Manager', a.am ? esc(nameOf(a.am)) : '<span class="sub">Unassigned</span>'],
+    ['AI team', teamText(a) || '<span class="sub">Unassigned</span>'],
+    ['Code', a.code ? `<b class="code">${esc(a.code)}</b>` : '<span class="sub">—</span>'],
+    ['Tier', a.tier ? esc(a.tier) : '<span class="sub">Not set</span>'],
+    ['POC account', pocReadyText(a.pocReady)],
     ['Sector', `${a.sector} sector`],
   ];
   if (a.contact) facts.push(['Agency contact', esc(a.contact)]);
+  if (a.cfaRemarks) facts.push(['Remarks (for CFA)', esc(a.cfaRemarks)]);
   const editBtn = canEditDetails(a) && !a.archived ? `<a class="btn btn-sm" href="account-form.html?id=${encodeURIComponent(a.id)}">Edit details</a>` : '';
   const archiveBtn = canArchive(a) && !a.archived ? `<button type="button" class="btn btn-sm" data-act="archive" data-id="${a.id}">${icon('archive')} Archive</button>` : '';
   const banner = a.archived ? `<div class="archived-banner">${icon('archive')}<span><b>Archived</b> on ${fmtDate(a.archived.at)} by ${esc(nameOf(a.archived.by))}. It's hidden from active views; everything below is kept for reference.</span>
@@ -777,7 +786,9 @@ function accountPage() {
       <div class="detail-title"><div><div class="sub">${a.id}</div><div class="use-case">${esc(a.useCase)}</div>
         ${a.description ? `<p class="description">${esc(a.description)}</p>` : ''}</div>
         <div class="head-actions">${status}${editBtn}${archiveBtn}</div></div>
-      <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+      <dl class="facts">${facts.map(([k, v]) => `<div class="${k.startsWith('Remarks') ? 'wide' : ''}"><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
+      ${a.tracker && a.tracker.length ? `<div class="tracker"><span class="sub">From the lifecycle tracker</span><div class="tracker-chips">
+        ${a.tracker.map(([k, v]) => `<span class="tchip t-${String(v).toLowerCase().replace(/[^a-z]/g, '')}"><small>${esc(k)}</small>${esc(v)}</span>`).join('')}</div></div>` : ''}
     </div>
     <section class="section"><h2>POC lifecycle</h2><div class="card">${stepper(a)}</div></section>
     <div class="detail-grid section">
@@ -802,7 +813,8 @@ function accountFormPage() {
       <a class="btn btn-primary" href="settings.html?tab=workspace">${icon('users')} Add your team first</a></div>`;
   }
   if (!ok) return `<div class="empty">${mode === 'new' ? 'Only the AI Team Lead can create accounts.' : "Account not found, or you can't edit it."}</div>`;
-  const v = a || { name: '', sector: 'Public', useCase: '', description: '', contact: '', am: '', devs: [] };
+  const v = a || { name: '', code: '', tier: '', pocReady: null, cfaRemarks: '', sector: 'Public', useCase: '', description: '', contact: '', am: '', devs: [] };
+  const devOpts = cur => opt('', '—', cur || '') + USERS.filter(u => u.role === 'DEV').map(u => opt(u.id, u.name, cur)).join('');
   const lock = user.role !== 'TL';
   const opt = (val, label, cur) => `<option value="${esc(val)}" ${val === cur ? 'selected' : ''}>${esc(label)}</option>`;
   const cancel = a ? accountLink(a) : 'accounts.html';
@@ -811,13 +823,17 @@ function accountFormPage() {
     <div class="form-grid">
       <label><span>Agency / client name <span class="req">*</span></span><input name="accName" value="${esc(v.name)}" placeholder="e.g. Ministry of Health" maxlength="120"></label>
       <label><span>Sector</span><select name="sector">${opt('Public', 'Public sector', v.sector)}${opt('Private', 'Private sector', v.sector)}</select></label>
+      <label><span>Code <span class="sub">(optional)</span></span><input name="code" value="${esc(v.code || '')}" placeholder="e.g. MOF" maxlength="16"></label>
+      <label><span>Tier</span><select name="tier">${opt('', 'Not set', v.tier || '')}${TIERS.map(t => opt(t, t, v.tier)).join('')}</select></label>
+      <label><span>POC account</span><select name="pocReady">${opt('', 'Not set', v.pocReady == null ? '' : String(v.pocReady))}${opt('true', 'Ready', String(v.pocReady))}${opt('false', 'Not ready', String(v.pocReady))}</select></label>
       <label class="full"><span>POC use case <span class="req">*</span></span><input name="useCase" value="${esc(v.useCase)}" placeholder="e.g. Clinical notes summarisation" maxlength="160"></label>
       <label class="full"><span>Problem statement <span class="sub">(optional)</span></span><textarea name="description" rows="3" placeholder="What problem does the agency want AI to solve?">${esc(v.description || '')}</textarea></label>
+      <label class="full"><span>Remarks for CFA <span class="sub">(optional)</span></span><textarea name="cfaRemarks" rows="2" placeholder="e.g. 16/10: Submitted the CGSO paper">${esc(v.cfaRemarks || '')}</textarea></label>
       <label><span>Agency contact person <span class="sub">(optional)</span></span><input name="contact" value="${esc(v.contact || '')}" placeholder="Name and role" maxlength="120"></label>
       <label><span>Account Manager <span class="req">*</span></span><select name="am" ${lock ? 'disabled' : ''}>
         ${opt('', 'Select…', v.am)}${USERS.filter(u => u.role === 'AM').map(u => opt(u.id, u.name, v.am)).join('')}</select></label>
-      <fieldset class="full" ${lock ? 'disabled' : ''}><legend>Developers</legend>
-        <div class="check-grid">${USERS.filter(u => u.role === 'DEV').map(u => `<label class="check"><input type="checkbox" name="devs" value="${u.id}" ${v.devs.includes(u.id) ? 'checked' : ''}> ${esc(u.name)}</label>`).join('')}</div>
+      <fieldset class="full" ${lock ? 'disabled' : ''}><legend>AI team</legend>
+        <div class="team-grid">${TEAM_ORDER.map((r, i) => `<label><span>${r}</span><select name="dev${i}">${devOpts(v.devs[i])}</select></label>`).join('')}</div>
       </fieldset>
     </div>
     ${lock ? '<p class="sub">Only the AI Team Lead can change the Account Manager or Developers.</p>' : ''}
@@ -834,6 +850,8 @@ function saveAccountForm(form) {
   const v = {
     name: f.accName.value.trim(), sector: f.sector.value, useCase: f.useCase.value.trim(),
     description: f.description.value.trim(), contact: f.contact.value.trim(),
+    code: f.code.value.trim().toUpperCase(), tier: f.tier.value, cfaRemarks: f.cfaRemarks.value.trim(),
+    pocReady: f.pocReady.value === '' ? null : f.pocReady.value === 'true',
   };
   if (!v.name) return err('Please enter the agency or client name.');
   if (!v.useCase) return err('Please enter the POC use case.');
@@ -842,7 +860,7 @@ function saveAccountForm(form) {
   let am = a ? a.am : '', devs = a ? a.devs : [];
   if (user.role === 'TL') {
     am = f.am.value;
-    devs = [...form.querySelectorAll('input[name=devs]:checked')].map(i => i.value);
+    devs = [...new Set([0, 1, 2].map(i => f['dev' + i].value).filter(Boolean))];
     if (!am) return err('Please choose an Account Manager.');
   }
 
@@ -856,12 +874,13 @@ function saveAccountForm(form) {
     log(target, 'Account created');
   } else {
     target = a;
-    const labels = { name: 'Name', sector: 'Sector', useCase: 'Use case', description: 'Problem statement', contact: 'Agency contact' };
-    const changed = Object.keys(labels).filter(k => (a[k] || '') !== v[k]);
+    const labels = { name: 'Name', sector: 'Sector', useCase: 'Use case', description: 'Problem statement', contact: 'Agency contact',
+      code: 'Code', tier: 'Tier', pocReady: 'POC account', cfaRemarks: 'Remarks for CFA' };
+    const changed = Object.keys(labels).filter(k => (a[k] ?? '') !== (v[k] ?? ''));
     Object.assign(a, v);
     if (changed.length) log(a, `Edited details: ${changed.map(k => labels[k]).join(', ')}`);
     if (am !== a.am) { log(a, `Account Manager changed: ${nameOf(a.am)} → ${nameOf(am)}`); a.am = am; }
-    if ([...devs].sort().join() !== [...a.devs].sort().join()) { a.devs = devs; log(a, `Developers updated: ${devs.map(nameOf).join(', ') || 'none'}`); }
+    if (devs.join() !== a.devs.join()) { a.devs = devs; log(a, `AI team updated: ${devs.map((id, i) => `${nameOf(id)} (${TEAM_ORDER[i]})`).join(', ') || 'none'}`); }
   }
   saveAccounts(accounts);
   location.href = `${accountLink(target)}&saved=${mode === 'new' ? 'created' : 'updated'}`;

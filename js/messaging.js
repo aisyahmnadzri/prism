@@ -17,70 +17,75 @@ function seedMessages() {
   return {
     defaultRead: minsAgo(360), // demo: everything older than 6 hours counts as read
     reads: {},
-    groups: [{ id: 'G1', name: 'Health & Immigration squad', members: ['u2', 'u4', 'u5'], by: 'u2', at: minsAgo(4000) },
-      { id: 'G2', name: 'AI Team leads', members: ['u1', 'u2', 'u3', 'u7', 'u6'], by: 'u1', at: minsAgo(9000) }],
+    groups: [
+      { id: 'G1', name: 'AI Team', members: ['u1', 'u4', 'u5', 'u7', 'u8', 'u9', 'u10', 'u11', 'u12', 'u13', 'u14', 'u15'], by: 'u1', at: minsAgo(20000) },
+      { id: 'G2', name: 'Account Managers & leads', members: ['u1', 'u2', 'u3', 'u6'], by: 'u1', at: minsAgo(20000) },
+    ],
     threads: {
       'acc:ACC-001': [
-        m('u2', 2900, 'Agency IT confirmed the second batch of notes is ready. @Kavitha Raj can you pick it up on Monday?'),
-        m('u4', 2860, "Yes, I'll collect it during the site visit."),
-        m('u1', 1500, "Good. Let's aim for accuracy above 90% before the review."),
-        m('u4', 180, 'Accuracy is now 87% on the test set. Trying a larger context window next.'),
+        m('u2', 9000, 'Tender is open. AWS still needs to finalise their side.'),
+        m('u1', 8900, 'Noted. Keep MOF on the CFA track and update here when AWS confirms.'),
+        m('u2', 240, 'Still waiting for AWS. I will chase them again this week.'),
       ],
       'acc:ACC-003': [
-        m('u2', 1440, 'Agency wants extra testing on passport scans before evaluation.'),
-        m('u5', 1200, 'I can run the batch tonight. Need the sample scans from their team.'),
-        m('u2', 120, "@Hafiz Rahman the evaluation panel still isn't confirmed. Can you escalate?"),
+        m('u4', 5800, 'Finetuning results are in. Accuracy is below what IIM expects.'),
+        m('u7', 5700, 'I can try a different prompt set and more training samples.'),
+        m('u3', 300, '@Aisyah can we have the next iteration ready before the review?'),
+        m('u4', 120, 'Yes, Alia and Fiqry are on it. Review is booked for tomorrow.'),
       ],
-      'acc:ACC-002': [
-        m('u3', 1450, 'Proposal and success criteria uploaded. Requesting Higher Management sign-off.'),
-        m('u6', 300, 'Reviewed. Can we tighten the success criteria on false positives?'),
-        m('u3', 240, 'Will update: target false-positive rate under 5%.'),
+      'acc:ACC-004': [
+        m('u2', 7300, 'Lunch & Learn went well. They want to explore a new use case.'),
+        m('u2', 7200, 'CFA paper to be submitted at JPP CFA on 18/11.'),
+        m('u1', 60, '@Kira how did the JPP CFA submission go?'),
       ],
-      'acc:ACC-006': [
-        m('u3', 1460, 'Decision memo is in. The agency is keen to proceed to procurement.'),
-        m('u6', 30, "Thanks. I'll decide after Friday's meeting. @Daniel Lim please share the cost estimate."),
+      'acc:ACC-007': [
+        m('u5', 2900, 'We cannot start implementation until the POC account is ready.'),
+        m('u3', 400, 'Parlimen IT says the account should be ready next week. I will follow up.'),
       ],
-      'acc:ACC-008': [m('u4', 60, 'Internal review notes uploaded. Ready for the client demo next week.')],
-      'acc:ACC-012': [
-        m('u8', 2000, 'Worn cards are causing most of the false alarms.'),
-        m('u2', 1900, "I'll ask the agency for more worn-card samples."),
-        m('u1', 95, "@Nurul Aina let's flag this as At Risk until the samples arrive."),
-        m('u8', 25, 'Retrained with augmentation: false alarms down from 14% to 9%.'),
+      'acc:ACC-009': [
+        m('u2', 54000, 'CGSO paper submitted. The next JDN JPPCSA is in November.'),
+        m('u1', 1500, "I'll give my recommendation for the Go / No-Go request this week."),
+        m('u13', 200, 'Lunch & Learn deck is ready if we want to schedule it.'),
       ],
-      'acc:ACC-013': [
-        m('u7', 1500, 'Completion letter signed by the agency 🎉'),
-        m('u5', 80, 'Uploaded and requested the move to Go / No-Go. @Farah Hanim please approve.'),
+      'acc:ACC-010': [
+        m('u3', 54000, 'MITRA just entered the sectoral approval process phase.'),
+        m('u5', 3000, 'Deployment is stable. No issues reported by the agency.'),
       ],
-      'acc:ACC-015': [
-        m('u6', 17300, 'Converted. Well done everyone, the ministry wants a national rollout plan.'),
-        m('u7', 17200, "Thank you! I'll set up the rollout planning meeting."),
+      'acc:ACC-016': [
+        m('u9', 7300, 'Immersion session with Jabatan Kimia is confirmed for 18 November.'),
+        m('u9', 2900, 'Data checklist and environment are ready. Requested the move to POC Development.'),
+        m('u1', 90, 'Looks good, will review today.'),
       ],
-      'acc:ACC-014': [m('u3', 300, 'First private-sector POC. They have three years of gate photos we can use.')],
-      'dm:u1:u7': [
-        m('u7', 400, 'Fire and Rescue wants the transcription demo in Malay and English.'),
-        m('u1', 380, 'Good. Jason can show both. Put it in the schedule.'),
+      'acc:ACC-017': [
+        m('u5', 1440, 'Internal review notes uploaded. @Hafiz Rahman please review so we can schedule the immersion.'),
+        m('u15', 600, 'I can prepare the demo environment for the immersion.'),
       ],
-      'dm:u7:u8': [m('u8', 70, 'Can you chase the data sharing agreement for Fire and Rescue?'), m('u7', 50, 'On it, their legal team replies tomorrow.')],
+      'acc:ACC-014': [m('u2', 60000, 'Still waiting for approval from Pengarah. Fact finding stays on hold for now.')],
+      'acc:ACC-019': [
+        m('u2', 4400, 'Use case brief and data assessment uploaded for KBS.'),
+        m('u4', 4300, 'Fact finding session booked for this week.'),
+      ],
       'dm:u1:u2': [
-        m('u1', 1450, 'Can you send me the MOH update before the leadership sync?'),
-        m('u2', 1380, "Sure, I'll post it in PRISM by end of day."),
-        m('u1', 40, "Thanks! Let's also plan the Land & Mines discovery together."),
+        m('u1', 1450, 'Can you send me the MOF and MOT updates before the management sync?'),
+        m('u2', 1380, 'Sure, I will update both in PRISM by end of day.'),
+        m('u1', 40, 'Thanks! Also, KPM: any reply from Pengarah?'),
       ],
       'dm:u1:u6': [
-        m('u6', 2950, 'Hafiz, can I get a summary of POCs nearing a decision?'),
-        m('u1', 2900, 'Inland Revenue Board is at Go / No-Go, and Public Works is waiting for your proposal approval.'),
+        m('u6', 2950, 'Can I get a summary of the Tier 1 accounts?'),
+        m('u1', 2900, 'MOF, MOT and MITRA. MOT is waiting for the Go / No-Go, MOF is in tender, MITRA is in sectoral approval.'),
       ],
-      'dm:u2:u4': [m('u4', 170, 'Do we have the latest data sharing agreement for Immigration?')],
+      'dm:u3:u4': [m('u4', 170, 'Do we have a date for the IIM finetuning review with the agency?'), m('u3', 150, 'Not yet, after our internal review tomorrow.')],
       'grp:G1': [
-        m('u2', 360 + 30, 'Stand-up moved to 9:30 tomorrow.'),
-        m('u5', 300, 'Noted 👍'),
-        m('u4', 55, "I'll demo the summariser improvements."),
+        m('u1', 1600, 'Please update progress for your accounts before Thursday.'),
+        m('u5', 1500, 'Noted 👍'),
+        m('u4', 400, 'KBS and KPN fact finding sessions are this week.'),
+        m('u10', 55, 'KPKT development on track. Demo build ready next week.'),
       ],
       'grp:G2': [
         m('u1', 1600, 'Reminder: monthly POC review on Thursday. Please update your accounts before then.'),
-        m('u6', 1500, 'I would like to see the conversion rate and anything At Risk.'),
-        m('u3', 200, 'Meteorological is delayed by the floods. Updated in PRISM.'),
-        m('u7', 45, 'Social Security is ready for Go / No-Go next week.'),
+        m('u6', 1500, 'I would like to see the Tier 1 accounts and anything At Risk.'),
+        m('u3', 200, 'Parlimen is At Risk until the POC account is ready.'),
+        m('u2', 45, 'MOT CGSO paper is in. Waiting for the JDN JPPCSA date.'),
       ],
     },
   };

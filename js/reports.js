@@ -138,11 +138,11 @@ function reportSheets() {
     ['Stage', 'Active POCs'], ...d.byStage.map(({ s, items }) => [`${s.id}. ${s.name}`, items.length]), [],
     ['Status', 'Active POCs'], ...d.byStatus.map(({ st, n }) => [st, n]),
   ];
-  const accountsSheet = [['ID', 'Account', 'Sector', 'Use case', 'Stage', 'Stage name', 'Status', 'Outcome', 'Archived', 'Progress %', 'Days in stage', 'Stage target days',
-    'Overdue', 'Account Manager', 'Developers', 'Waiting for approval from', 'Last update', 'Latest blocker'],
-    ...d.list.map(a => [a.id, a.name, a.sector, a.useCase, a.stage, stageOf(a).name, a.status, a.outcome || '', a.archived ? 'Yes' : 'No', a.progress,
-      a.outcome ? '' : daysIn(a), stageOf(a).targetDays, isOverdue(a) ? 'Yes' : 'No', nameOf(a.am), a.devs.map(nameOf).join(', '),
-      a.pending && !a.outcome ? ROLES[stageOf(a).approver].label : '', lastUpdate(a) ? fmtDate(lastUpdate(a)) : '', (a.updates[0] && a.updates[0].blockers) || ''])];
+  const accountsSheet = [['ID', 'Code', 'Tier', 'Account', 'Sector', 'Use case', 'Stage', 'Stage name', 'Status', 'Outcome', 'Archived', 'Progress %', 'Days in stage', 'Stage target days',
+    'Overdue', 'Account Manager', 'AI team (primary, secondary, tertiary)', 'POC account', 'Waiting for approval from', 'Last update', 'Latest blocker', 'Remarks for CFA'],
+    ...d.list.map(a => [a.id, a.code || '', a.tier || '', a.name, a.sector, a.useCase, a.stage, stageOf(a).name, a.status, a.outcome || '', a.archived ? 'Yes' : 'No', a.progress,
+      a.outcome ? '' : daysIn(a), stageOf(a).targetDays, isOverdue(a) ? 'Yes' : 'No', a.am ? nameOf(a.am) : '', a.devs.map(nameOf).join(', '), a.pocReady === true ? 'Ready' : a.pocReady === false ? 'Not ready' : '',
+      a.pending && !a.outcome ? ROLES[stageOf(a).approver].label : '', lastUpdate(a) ? fmtDate(lastUpdate(a)) : '', (a.updates[0] && a.updates[0].blockers) || '', a.cfaRemarks || ''])];
   const pendingSheet = [['Account', 'Stage', 'Moving to', 'Approver', 'Requested by', 'Requested on'],
     ...d.pending.map(a => [a.name, `${a.stage}. ${stageOf(a).name}`, a.stage < 10 ? STAGES[a.stage].name : 'Go / No-Go decision', ROLES[stageOf(a).approver].label, nameOf(a.pending.by), fmtDate(a.pending.at)])];
   const upcomingSheet = [['Date', 'Account', 'Milestone', 'Approver'],
